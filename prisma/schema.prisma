@@ -1,0 +1,289 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  SUPER_ADMIN
+  REVIEWER
+  CANDIDATE
+}
+
+enum ApplicationStatus {
+  DRAFT
+  PENDING
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+  ORAL_TEST
+  FINAL_LIST
+}
+
+enum JobStatus {
+  DRAFT
+  PUBLISHED
+  CLOSED
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum StudyLevel {
+  BAC
+  BAC_PLUS_2
+  LICENCE
+  MAITRISE
+  MASTER
+  DOCTORAT
+}
+
+model Admin {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  password     String
+  name         String
+  role         Role     @default(REVIEWER)
+  isActive     Boolean  @default(true)
+  lastLogin    DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  auditLogs    AuditLog[]
+
+  @@map("admins")
+}
+
+model Candidate {
+  id                String   @id @default(cuid())
+  email             String   @unique
+  password          String
+  isEmailVerified   Boolean  @default(false)
+  verificationCode String?
+  verificationExpiry DateTime?
+  smsOptIn          Boolean  @default(true)
+  
+  fullName          String
+  cin               String   @unique
+  dateOfBirth      DateTime
+  gender            Gender
+  phone             String
+  address           String?
+  governorate       String
+  delegation        String
+  
+  hasExperience     Boolean  @default(false)
+  
+  currentStep       Int      @default(1)
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  experiences       Experience[]
+  diplomas          Diploma[]
+  applications      Application[]
+  notifications     Notification[]
+  auditLogs         AuditLog[]
+
+  @@index([governorate])
+  @@index([fullName])
+  @@map("candidates")
+}
+
+model Experience {
+  id            String    @id @default(cuid())
+  candidateId   String
+  company       String
+  position      String
+  startDate     DateTime
+  endDate       DateTime?
+  isCurrent     Boolean   @default(false)
+  description   String?
+  
+  candidate     Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@map("experiences")
+}
+
+model Diploma {
+  id              String      @id @default(cuid())
+  candidateId     String
+  studyLevel      StudyLevel
+  diploma         String
+  institution     String
+  grade           String
+  graduationYear  Int
+  
+  candidate       Candidate   @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@map("diplomas")
+}
+
+model Job {
+  id              String    @id @default(cuid())
+  code            String    @unique
+  titleAr         String
+  titleFr         String
+  descriptionAr   String    @db.Text
+  descriptionFr   String    @db.Text
+  location        String
+  jobType         String
+  openings        Int
+  deadline        DateTime
+  status          JobStatus @default(DRAFT)
+  requiredDocs    String    @db.Text
+  
+  pdfUrl          String?
+  imageUrl        String?
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  applications    Application[]
+  scoringCriteria ScoredCriteria[]
+
+  @@index([status])
+  @@index([deadline])
+  @@index([status, deadline])
+  @@map("jobs")
+}
+
+model Application {
+  id              String            @id @default(cuid())
+  candidateId     String
+  jobId           String
+  status          ApplicationStatus @default(PENDING)
+  
+  personalInfo    Json?
+  academicInfo    Json?
+  experienceInfo  Json?
+  
+  totalScore      Float?
+  rank             Int?
+  
+  submittedAt     DateTime?
+  reviewedAt      DateTime?
+  reviewedBy      String?
+  
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  candidate       Candidate         @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  job             Job               @relation(fields: [jobId], references: [id])
+  documents       Document[]
+  scores          Score[]
+  statusHistory   StatusHistory[]
+
+  @@unique([candidateId, jobId])
+  @@index([status])
+  @@index([candidateId, status])
+  @@index([jobId, status])
+  @@map("applications")
+}
+
+model Document {
+  id            String      @id @default(cuid())
+  applicationId String
+  type          String
+  fileName      String
+  fileUrl       String
+  fileSize      Int
+  mimeType      String
+  
+  uploadedAt    DateTime    @default(now())
+
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@index([type])
+  @@map("documents")
+}
+
+model ScoredCriteria {
+  id        String @id @default(cuid())
+  jobId     String
+  name      String
+  weight    Float
+  
+  job       Job    @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  scores    Score[]
+
+  @@map("scored_criteria")
+}
+
+model Score {
+  id          String         @id @default(cuid())
+  applicationId String
+  criteriaId  String
+  value       Float
+  
+  application Application   @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  criteria    ScoredCriteria @relation(fields: [criteriaId], references: [id], onDelete: Cascade)
+  
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@unique([applicationId, criteriaId])
+  @@map("scores")
+}
+
+model StatusHistory {
+  id            String            @id @default(cuid())
+  applicationId String
+  status        ApplicationStatus
+  note          String?
+  changedBy     String
+  changedAt     DateTime          @default(now())
+
+  application   Application       @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@map("status_history")
+}
+
+model Notification {
+  id          String   @id @default(cuid())
+  candidateId String?
+  type        String
+  channel     String
+  subject     String
+  body        String
+  sentAt      DateTime @default(now())
+  status      String
+  error       String?
+
+  candidate   Candidate? @relation(fields: [candidateId], references: [id])
+
+  @@index([type])
+  @@index([status])
+  @@index([sentAt])
+  @@map("notifications")
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  adminId     String?
+  candidateId String?
+  action      String
+  entity      String
+  entityId    String
+  details     Json?
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+
+  admin       Admin?    @relation(fields: [adminId], references: [id])
+  candidate   Candidate? @relation(fields: [candidateId], references: [id])
+
+  @@index([entity, entityId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
