@@ -1,0 +1,17 @@
+{
+    "HomePage": {
+      "title": "Hello world!"
+    },
+    "common": {
+      "welcome": "Welcome to my app",
+      "button": {
+        "submit": "Submit",
+        "cancel": "Cancel"
+      }
+    },
+    "nav": {
+      "home": "Home",
+      "about": "About",
+      "contact": "Contact"
+    }
+  }
