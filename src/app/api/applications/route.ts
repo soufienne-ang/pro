@@ -149,6 +149,17 @@ export async function POST(request: NextRequest) {
 
     const candidateId = user.id;
 
+    const candidate = await prisma.candidate.findUnique({
+      where: { id: candidateId },
+    });
+
+    if (!candidate) {
+      return NextResponse.json(
+        { error: "Candidate not found. Please register first." },
+        { status: 404 }
+      );
+    }
+
     const existingApplication = await prisma.application.findUnique({
       where: {
         candidateId_jobId: {
