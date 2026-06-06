@@ -290,9 +290,12 @@ export default function ApplicationWizard() {
       return null;
     }
 
-    const session = await getSession();
-    if (session?.user?.role === "CANDIDATE") {
-      return session.user.id;
+    for (let attempt = 0; attempt < 5; attempt++) {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      const session = await getSession();
+      if (session?.user?.role === "CANDIDATE") {
+        return session.user.id;
+      }
     }
 
     setError(isRTL ? "فشل تسجيل الدخول" : "Échec de connexion");

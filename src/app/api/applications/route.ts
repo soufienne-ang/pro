@@ -147,11 +147,20 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validated = createApplicationSchema.parse(body);
 
-    const candidateId = user.id;
+    let candidateId = user.id;
 
-    const candidate = await prisma.candidate.findUnique({
+    let candidate = await prisma.candidate.findUnique({
       where: { id: candidateId },
     });
+
+    if (!candidate) {
+      candidate = await prisma.candidate.findUnique({
+        where: { email: validated.personalInfo.email },
+      });
+      if (candidate) {
+        candidateId = candidate.id;
+      }
+    }
 
     if (!candidate) {
       return NextResponse.json(
