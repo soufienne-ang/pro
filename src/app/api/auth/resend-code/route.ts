@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
     const locale = (request.nextUrl.searchParams.get("locale") as "ar" | "fr") || "ar";
     const { candidateId } = body as { candidateId?: string };
 
-    if (!candidateId) {
+    if (!candidateId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(candidateId)) {
       return NextResponse.json(
         { error: locale === "ar" ? "بيانات غير صحيحة" : "Données invalides" },
         { status: 400 }

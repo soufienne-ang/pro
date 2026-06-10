@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
     const locale = (request.nextUrl.searchParams.get("locale") as "ar" | "fr") || "ar";
     const { candidateId, code } = body;
 
-    verifyEmailSchema.parse({ code });
+    verifyEmailSchema.parse({ candidateId, code });
 
     const candidate = await prisma.candidate.findUnique({
       where: { id: candidateId },

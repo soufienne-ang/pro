@@ -3,6 +3,7 @@ export const revalidate = 60;
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/server/prisma";
+import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { createJobSchema } from "@/lib/schemas/jobs";
 import { requirePermission, isErrorResponse } from "@/lib/roles";
@@ -76,7 +77,15 @@ export async function POST(request: NextRequest) {
       const messages = error.errors.map((err) => `${err.path.join(".")}: ${err.message}`).join(", ");
       return NextResponse.json({ error: messages }, { status: 400 });
     }
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      const target = (error.meta?.target as string[])?.join(", ") || "code";
+      return NextResponse.json(
+        { error: `A job with this ${target} already exists` },
+        { status: 409 }
+      );
+    }
     console.error("Failed to create job:", error);
-    return NextResponse.json({ error: "Failed to create job" }, { status: 500 });
+    const message = error instanceof Error ? error.message : "Failed to create job";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

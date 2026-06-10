@@ -15,8 +15,14 @@ export const createJobSchema = z.object({
   }, "Deadline must be a valid future date"),
   requiredDocs: z.string().max(5000).optional().default(""),
   exclusionConditions: z.string().max(10000).optional().default(""),
-  pdfUrl: z.string().url().nullable().optional().default(null),
-  imageUrl: z.string().url().nullable().optional().default(null),
+  pdfUrl: z.preprocess(
+    (v) => (v === "" || v === null || v === undefined ? null : v),
+    z.string().url().nullable()
+  ).optional().default(null),
+  imageUrl: z.preprocess(
+    (v) => (v === "" || v === null || v === undefined ? null : v),
+    z.string().url().nullable()
+  ).optional().default(null),
   status: z.enum(["DRAFT", "PUBLISHED", "CLOSED"]).optional().default("DRAFT"),
 });
 

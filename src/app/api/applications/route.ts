@@ -14,6 +14,7 @@ const applicationFileSchema = z.object({
   fileSize: z.number().positive(),
   mimeType: z.string(),
 });
+type ApplicationFile = z.infer<typeof applicationFileSchema>;
 
 const diplomaSchema = z.object({
   studyLevel: z.string(),
@@ -22,6 +23,7 @@ const diplomaSchema = z.object({
   grade: z.string().optional().default(""),
   graduationYear: z.coerce.number().int().positive(),
 });
+type DiplomaInput = z.infer<typeof diplomaSchema>;
 
 const experienceSchema = z.object({
   company: z.string(),
@@ -31,6 +33,7 @@ const experienceSchema = z.object({
   isCurrent: z.boolean().optional().default(false),
   description: z.string().optional().default(""),
 });
+type ExperienceInput = z.infer<typeof experienceSchema>;
 
 function extractDocumentId(fileUrl: string): string | null {
   if (!fileUrl) return null;
@@ -188,8 +191,8 @@ export async function POST(request: NextRequest) {
         data: { applicationId: null },
       });
       const connectIds = (validated.documents?.files || [])
-        .map((file) => extractDocumentId(file.fileUrl))
-        .filter((id): id is string => typeof id === "string" && id.length > 0);
+        .map((file: ApplicationFile) => extractDocumentId(file.fileUrl))
+        .filter((id: string | null): id is string => typeof id === "string" && id.length > 0);
       application = await prisma.application.update({
         where: { id: existingApplication.id },
         data: {
@@ -199,7 +202,7 @@ export async function POST(request: NextRequest) {
           experienceInfo: validated.experienceInfo ?? undefined,
           submittedAt: new Date(),
           documents: {
-            connect: connectIds.map((id) => ({ id })),
+            connect: connectIds.map((id: string) => ({ id })),
           },
         },
         include: {
@@ -210,8 +213,8 @@ export async function POST(request: NextRequest) {
       });
     } else {
       const connectIds = (validated.documents?.files || [])
-        .map((file) => extractDocumentId(file.fileUrl))
-        .filter((id): id is string => typeof id === "string" && id.length > 0);
+        .map((file: ApplicationFile) => extractDocumentId(file.fileUrl))
+        .filter((id: string | null): id is string => typeof id === "string" && id.length > 0);
       application = await prisma.application.create({
         data: {
           candidateId,
@@ -222,7 +225,7 @@ export async function POST(request: NextRequest) {
           experienceInfo: validated.experienceInfo ?? undefined,
           submittedAt: new Date(),
           documents: {
-            connect: connectIds.map((id) => ({ id })),
+            connect: connectIds.map((id: string) => ({ id })),
           },
         },
         include: {
@@ -235,8 +238,8 @@ export async function POST(request: NextRequest) {
 
     if (validated.academicInfo?.diplomas?.length) {
       const diplomaRows = validated.academicInfo.diplomas
-        .filter((d) => validStudyLevels.has(d.studyLevel) && d.diploma && d.institution)
-        .map((d) => ({
+        .filter((d: DiplomaInput) => validStudyLevels.has(d.studyLevel) && d.diploma && d.institution)
+        .map((d: DiplomaInput) => ({
           candidateId,
           studyLevel: d.studyLevel as StudyLevel,
           diploma: d.diploma,
@@ -252,8 +255,8 @@ export async function POST(request: NextRequest) {
 
     if (validated.experienceInfo?.hasExperience && validated.experienceInfo?.experiences?.length) {
       const experienceRows = validated.experienceInfo.experiences
-        .filter((exp) => exp.company && exp.position && exp.startDate)
-        .map((exp) => ({
+        .filter((exp: ExperienceInput) => exp.company && exp.position && exp.startDate)
+        .map((exp: ExperienceInput) => ({
           candidateId,
           company: exp.company,
           position: exp.position,

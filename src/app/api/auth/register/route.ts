@@ -4,8 +4,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { hash } from "bcryptjs";
 import { prisma } from "@/server/prisma";
 import { ZodError } from "zod";
-import { candidateRegistrationSchema } from "@/lib/schemas/auth";
+import { candidateRegistrationSchema, type CandidateRegistration } from "@/lib/schemas/auth";
 import { sendVerificationEmail } from "@/server/email";
+
+type DiplomaRegistration = CandidateRegistration["diplomas"][number];
+type ExperienceRegistration = CandidateRegistration["experiences"][number];
 
 export async function POST(request: NextRequest) {
   try {
@@ -56,7 +59,7 @@ export async function POST(request: NextRequest) {
         verificationExpiry: expiry,
         hasExperience: validated.hasExperience,
         diplomas: validated.diplomas.length > 0 ? {
-          create: validated.diplomas.map((d) => ({
+          create: validated.diplomas.map((d: DiplomaRegistration) => ({
             studyLevel: d.studyLevel as any,
             diploma: d.diploma,
             institution: d.institution,
@@ -65,7 +68,7 @@ export async function POST(request: NextRequest) {
           })),
         } : undefined,
         experiences: validated.hasExperience && validated.experiences.length > 0 ? {
-          create: validated.experiences.map((e) => ({
+          create: validated.experiences.map((e: ExperienceRegistration) => ({
             company: e.company,
             position: e.position,
             startDate: new Date(e.startDate),

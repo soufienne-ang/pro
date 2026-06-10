@@ -59,6 +59,7 @@ export const adminLoginSchema = z.object({
 });
 
 export const verifyEmailSchema = z.object({
+  candidateId: z.string().uuid("Candidate ID must be a valid UUID"),
   code: z.string().length(6, "Code must be 6 digits").regex(/^\d+$/, "Code must contain only numbers"),
 });
 

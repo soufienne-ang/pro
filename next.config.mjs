@@ -10,7 +10,7 @@ const nextConfig = {
     remotePatterns: [],
   },
   experimental: {
-    serverComponentsExternalPackages: ['pdfkit'],
+    serverComponentsExternalPackages: ['pdfkit', 'arabic-reshaper'],
   },
   async redirects() {
     return [

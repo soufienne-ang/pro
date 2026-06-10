@@ -22,5 +22,5 @@
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules", "test-smtp.ts", "test-smtp2.ts"]
+  "exclude": ["node_modules", "node_modules_old", "node_modules_old2", "node_modules_bad", "node_modules_bad_", "test-smtp.ts", "test-smtp2.ts"]
 }

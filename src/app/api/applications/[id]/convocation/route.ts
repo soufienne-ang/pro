@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/server/prisma";
-import { requirePermission, isErrorResponse } from "@/lib/roles";
+import { requireUser, isErrorResponse, hasPermission } from "@/lib/roles";
 import PDFDocument from "pdfkit";
 import path from "path";
 import reshaper from "arabic-reshaper";
@@ -30,7 +30,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const user = await requirePermission("generateConvocation");
+    const user = await requireUser();
     if (isErrorResponse(user)) return user;
 
     const { id } = await params;
@@ -46,6 +46,12 @@ export async function GET(
 
     if (!application) {
       return NextResponse.json({ error: "Application not found" }, { status: 404 });
+    }
+
+    const isStaff = hasPermission(user.role, "generateConvocation");
+    const isOwner = user.id === application.candidateId;
+    if (!isStaff && !isOwner) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const doc = new PDFDocument({ size: "A4", margin: 60 });

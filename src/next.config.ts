@@ -10,6 +10,7 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  transpilePackages: ['next-auth'],
 };
 
 const withNextIntl = createNextIntlPlugin();
