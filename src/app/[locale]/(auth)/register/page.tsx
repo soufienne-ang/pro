@@ -942,7 +942,8 @@ export default function RegisterPage() {
                     {currentStep === 1 ? (isRTL ? "إلغاء" : "Annuler") : (isRTL ? "→ رجوع" : "← Retour")}
                   </Button>
                   <Button
-                    type="submit"
+                    type={currentStep === STEPS.length ? "submit" : "button"}
+                    onClick={currentStep === STEPS.length ? undefined : handleNextStep}
                     className="px-8 h-12 font-semibold bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white shadow-lg hover:shadow-xl transition-all"
                     disabled={loading}
                   >

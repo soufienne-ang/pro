@@ -19,6 +19,8 @@ const MAX_SIZE = 5 * 1024 * 1024;
 const ID_PATTERN = /^[a-zA-Z0-9_-]{1,64}$/;
 const TEMP_PREFIX = "temp:";
 
+const USE_BLOB_STORAGE = !!process.env.BLOB_READ_WRITE_TOKEN;
+
 function sanitizeFileName(fileName: string): string {
   const name = fileName.split(/[\\/]/).pop() || "file";
   const ext = name.split(".").pop()?.toLowerCase() || "";
@@ -39,6 +41,10 @@ export async function POST(request: NextRequest) {
 
     if (!file) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
+    }
+
+    if (file.size === 0) {
+      return NextResponse.json({ error: "Fichier vide" }, { status: 400 });
     }
 
     if (!ALLOWED_TYPES.has(file.type)) {
@@ -85,17 +91,30 @@ export async function POST(request: NextRequest) {
       resolvedCandidateId = candidateExists.id;
     }
 
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
     const safeFileName = sanitizeFileName(file.name);
+    let blobUrl = "";
+    let buffer = Buffer.alloc(0);
+
+    if (USE_BLOB_STORAGE) {
+      const { put } = await import("@vercel/blob");
+      const blob = await put(safeFileName, file, {
+        access: "public",
+        contentType: file.type,
+        addRandomSuffix: true,
+      });
+      blobUrl = blob.url;
+    } else {
+      const bytes = await file.arrayBuffer();
+      buffer = Buffer.from(bytes);
+    }
+
     const document = await prisma.document.create({
       data: {
         candidateId: resolvedCandidateId,
         applicationId: null,
         type: docType,
         fileName: safeFileName,
-        fileUrl: "",
+        fileUrl: blobUrl,
         fileSize: file.size,
         mimeType: file.type,
         data: buffer,
@@ -103,12 +122,14 @@ export async function POST(request: NextRequest) {
       select: { id: true },
     });
 
-    const finalUrl = `/api/documents/${document.id}`;
+    const finalUrl = blobUrl || `/api/documents/${document.id}`;
 
-    await prisma.document.update({
-      where: { id: document.id },
-      data: { fileUrl: finalUrl },
-    });
+    if (!blobUrl) {
+      await prisma.document.update({
+        where: { id: document.id },
+        data: { fileUrl: finalUrl },
+      });
+    }
 
     return NextResponse.json({
       id: document.id,
@@ -117,9 +138,12 @@ export async function POST(request: NextRequest) {
       size: file.size,
       mimeType: file.type,
       type: docType,
+      blob: USE_BLOB_STORAGE,
     });
   } catch (error) {
     console.error("Upload failed:", error);
-    return NextResponse.json({ error: "Échec du téléchargement" }, { status: 500 });
+    const message =
+      error instanceof Error ? error.message : "Échec du téléchargement";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

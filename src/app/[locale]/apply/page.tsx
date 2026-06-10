@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { signIn, getSession } from "next-auth/react";
+import { signIn, signOut, getSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { formatPhone } from "@/lib/phone";
 import { Button } from "@/components/ui/button";
@@ -214,7 +214,7 @@ export default function ApplicationWizard() {
         if (!hasExperience) return true;
         return experiences.some((e) => e.company && e.position && e.startDate);
       case 4:
-        return uploadedFiles.length > 0;
+        return true;
       case 5:
         return !!selectedJob;
       case 6:
@@ -237,7 +237,15 @@ export default function ApplicationWizard() {
   const ensureCandidateSession = async (): Promise<string | null> => {
     const existing = await getSession();
     if (existing?.user?.role === "CANDIDATE") {
-      return existing.user.id;
+      try {
+        const verifyRes = await fetch("/api/candidate/profile");
+        if (verifyRes.ok) {
+          return existing.user.id;
+        }
+      } catch {
+        // Candidate not found, proceed to re-register
+      }
+      await signOut({ redirect: false });
     }
 
     const registrationPayload = {

@@ -166,6 +166,15 @@ export async function POST(request: NextRequest) {
     }
 
     if (!candidate) {
+      candidate = await prisma.candidate.findUnique({
+        where: { cin: validated.personalInfo.cin },
+      });
+      if (candidate) {
+        candidateId = candidate.id;
+      }
+    }
+
+    if (!candidate) {
       return NextResponse.json(
         { error: "Candidate not found. Please register first." },
         { status: 404 }

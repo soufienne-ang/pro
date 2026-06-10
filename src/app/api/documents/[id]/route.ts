@@ -22,11 +22,16 @@ export async function GET(
         fileSize: true,
         mimeType: true,
         data: true,
+        fileUrl: true,
       },
     });
 
     if (!doc) {
       return NextResponse.json({ error: "Document not found" }, { status: 404 });
+    }
+
+    if (doc.fileUrl && doc.fileUrl.startsWith("https://")) {
+      return NextResponse.redirect(doc.fileUrl, 302);
     }
 
     const user = await getCurrentUser();
@@ -79,7 +84,7 @@ export async function DELETE(
 
     const doc = await prisma.document.findUnique({
       where: { id },
-      select: { id: true, candidateId: true, applicationId: true },
+      select: { id: true, candidateId: true, applicationId: true, fileUrl: true },
     });
 
     if (!doc) {
@@ -92,6 +97,15 @@ export async function DELETE(
 
     if (!isOwner && !isAdmin && !canDeleteTemp) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    if (doc.fileUrl && doc.fileUrl.startsWith("https://") && isAdmin) {
+      try {
+        const { del } = await import("@vercel/blob");
+        await del(doc.fileUrl);
+      } catch (e) {
+        console.error("Failed to delete blob:", e);
+      }
     }
 
     await prisma.document.delete({ where: { id } });

@@ -33,7 +33,7 @@ function t(value: { ar: string; fr: string } | undefined, locale: "ar" | "fr", f
   return value[locale] || value.fr || value.ar || fallback;
 }
 
-function humanSize(bytes: number, locale: "ar" | "fr"): string {
+function humanSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
@@ -107,11 +107,15 @@ export function FileDropzone({
           mimeType: data.mimeType,
         };
       } catch (e) {
-        setError(e instanceof Error ? e.message : "Upload error");
+        const msg = e instanceof Error ? e.message : "Upload error";
+        const friendly = msg.includes("413") || msg.includes("too large")
+          ? (isRTL ? "الملف كبير جدًا. الحد الأقصى هو 4 ميغابايت." : "Fichier trop volumineux. La limite est de 4 Mo.")
+          : msg;
+        setError(friendly);
         return null;
       }
     },
-    [candidateId, docType, validateFile]
+    [candidateId, docType, validateFile, isRTL]
   );
 
   const handleFiles = useCallback(
@@ -300,7 +304,7 @@ export function FileDropzone({
                     {file.fileName}
                   </a>
                   <p className="text-xs text-slate-500">
-                    {humanSize(file.fileSize, locale)} · {file.mimeType}
+                    {humanSize(file.fileSize)} · {file.mimeType}
                   </p>
                 </div>
               </div>
