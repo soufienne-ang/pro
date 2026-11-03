@@ -6,6 +6,7 @@ import { prisma } from "@/server/prisma";
 import { z } from "zod";
 import { applicationFilterSchema } from "@/lib/schemas/jobs";
 import { ROLES, requirePermission, requireRole, isErrorResponse } from "@/lib/roles";
+import { meetsMinEduLevel } from "@/server/scoring";
 
 const applicationFileSchema = z.object({
   type: z.string(),
@@ -21,6 +22,7 @@ const diplomaSchema = z.object({
   diploma: z.string(),
   institution: z.string(),
   grade: z.string().optional().default(""),
+  noteGenerale: z.string().optional().default(""),
   graduationYear: z.coerce.number().int().positive(),
 });
 type DiplomaInput = z.infer<typeof diplomaSchema>;
@@ -46,17 +48,27 @@ const createApplicationSchema = z.object({
     fullName: z.string().min(1),
     cin: z.string().length(8),
     email: z.string().email(),
-    dateOfBirth: z.string(),
+    dateOfBirth: z.string().refine((v) => !isNaN(new Date(v).getTime()), "Invalid date"),
     gender: z.enum(["MALE", "FEMALE"]),
     phone: z.string(),
     governorate: z.string(),
     delegation: z.string(),
+    address: z.string().optional().default(""),
   }),
   jobSelection: z.object({
     jobId: z.string(),
   }),
+  eduLevel: z
+    .enum(["NONE", "PRIMARY", "MIDDLE", "SECONDARY", "VOCATIONAL"])
+    .nullable()
+    .optional()
+    .default(null),
   academicInfo: z.object({
     diplomas: z.array(diplomaSchema).optional(),
+    moyenneBac: z.string().optional().default(""),
+    moyenne1ere: z.string().optional().default(""),
+    moyenne2eme: z.string().optional().default(""),
+    moyenne3eme: z.string().optional().default(""),
   }).optional(),
   experienceInfo: z.object({
     hasExperience: z.boolean().optional().default(false),
@@ -190,7 +202,63 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    if (!existingApplication) {
+      var anyApplication = await prisma.application.findFirst({
+        where: { candidateId, jobId: { not: validated.jobSelection.jobId } },
+      });
+      if (anyApplication) {
+        return NextResponse.json(
+          { error: "لا يمكنك الترشح لأكثر من مناظرة واحدة. لديك بالفعل ترشح نشط." },
+          { status: 403 }
+        );
+      }
+    }
+
     const validStudyLevels = new Set<string>(Object.values(StudyLevel));
+
+    // ---- Eligibility gate -------------------------------------------------
+    // Mirrors the wizard rules server-side so the API cannot be bypassed:
+    //  - ACADEMIC jobs require at least one complete diploma entry.
+    //  - MANUAL jobs require a declared education level meeting the job's
+    //    configured minimum (maintenance, multi-skilled workers, cleaners).
+    const job = await prisma.job.findUnique({
+      where: { id: validated.jobSelection.jobId },
+      select: { id: true, profile: true, minEduLevel: true },
+    });
+
+    if (!job) {
+      return NextResponse.json({ error: "Job not found" }, { status: 404 });
+    }
+
+    const declaredEduLevel = validated.eduLevel ?? null;
+
+    if (job.profile === "MANUAL") {
+      if (!declaredEduLevel) {
+        return NextResponse.json(
+          { error: "Ce poste n'exige pas de diplôme mais nécessite un niveau d'éducation déclaré." },
+          { status: 400 }
+        );
+      }
+      if (!meetsMinEduLevel(job, declaredEduLevel)) {
+        return NextResponse.json(
+          { error: `Le niveau requis pour ce poste est : ${job.minEduLevel}.` },
+          { status: 400 }
+        );
+      }
+    } else {
+      const diplomas = validated.academicInfo?.diplomas ?? [];
+      const hasCompleteDiploma = diplomas.some(
+        (d: DiplomaInput) =>
+          validStudyLevels.has(d.studyLevel) && d.diploma && d.institution
+      );
+      if (!hasCompleteDiploma) {
+        return NextResponse.json(
+          { error: "Ce poste exige au moins un diplôme complet." },
+          { status: 400 }
+        );
+      }
+    }
+    // ---- End eligibility gate --------------------------------------------
 
     let application;
 
@@ -202,6 +270,11 @@ export async function POST(request: NextRequest) {
       const connectIds = (validated.documents?.files || [])
         .map((file: ApplicationFile) => extractDocumentId(file.fileUrl))
         .filter((id: string | null): id is string => typeof id === "string" && id.length > 0);
+
+      const validIds = connectIds.length > 0
+        ? (await prisma.document.findMany({ where: { id: { in: connectIds } }, select: { id: true } })).map(d => d.id)
+        : [];
+
       application = await prisma.application.update({
         where: { id: existingApplication.id },
         data: {
@@ -211,7 +284,7 @@ export async function POST(request: NextRequest) {
           experienceInfo: validated.experienceInfo ?? undefined,
           submittedAt: new Date(),
           documents: {
-            connect: connectIds.map((id: string) => ({ id })),
+            connect: validIds.map((id: string) => ({ id })),
           },
         },
         include: {
@@ -220,10 +293,22 @@ export async function POST(request: NextRequest) {
           documents: true,
         },
       });
+
+      if (validIds.length > 0) {
+        await prisma.document.updateMany({
+          where: { id: { in: validIds } },
+          data: { candidateId },
+        });
+      }
     } else {
       const connectIds = (validated.documents?.files || [])
         .map((file: ApplicationFile) => extractDocumentId(file.fileUrl))
         .filter((id: string | null): id is string => typeof id === "string" && id.length > 0);
+
+      const validIds = connectIds.length > 0
+        ? (await prisma.document.findMany({ where: { id: { in: connectIds } }, select: { id: true } })).map(d => d.id)
+        : [];
+
       application = await prisma.application.create({
         data: {
           candidateId,
@@ -232,9 +317,10 @@ export async function POST(request: NextRequest) {
           personalInfo: validated.personalInfo,
           academicInfo: validated.academicInfo ?? undefined,
           experienceInfo: validated.experienceInfo ?? undefined,
+          eduLevel: declaredEduLevel,
           submittedAt: new Date(),
           documents: {
-            connect: connectIds.map((id: string) => ({ id })),
+            connect: validIds.map((id: string) => ({ id })),
           },
         },
         include: {
@@ -243,6 +329,13 @@ export async function POST(request: NextRequest) {
           documents: true,
         },
       });
+
+      if (validIds.length > 0) {
+        await prisma.document.updateMany({
+          where: { id: { in: validIds } },
+          data: { candidateId },
+        });
+      }
     }
 
     if (validated.academicInfo?.diplomas?.length) {
@@ -290,6 +383,7 @@ export async function POST(request: NextRequest) {
         phone: validated.personalInfo.phone,
         governorate: validated.personalInfo.governorate,
         delegation: validated.personalInfo.delegation,
+        address: validated.personalInfo.address || "",
         hasExperience: validated.experienceInfo?.hasExperience || false,
         currentStep: 8,
       },

@@ -30,8 +30,22 @@ export async function GET(
       return NextResponse.json({ error: "Document not found" }, { status: 404 });
     }
 
+    const isPublic = !doc.candidateId && !doc.applicationId;
+
     if (doc.fileUrl && doc.fileUrl.startsWith("https://")) {
       return NextResponse.redirect(doc.fileUrl, 302);
+    }
+
+    if (isPublic) {
+      return new NextResponse(doc.data as unknown as BodyInit, {
+        status: 200,
+        headers: {
+          "Content-Type": doc.mimeType,
+          "Content-Length": doc.fileSize.toString(),
+          "Content-Disposition": `inline; filename="${doc.fileName}"`,
+          "Cache-Control": "public, max-age=3600",
+        },
+      });
     }
 
     const user = await getCurrentUser();
@@ -52,7 +66,7 @@ export async function GET(
       user?.role &&
       ["SUPER_ADMIN", "HR_AGENT", "JURY_MEMBER", "COMMISSION", "REVIEWER"].includes(user.role);
 
-    if (!isOwner && !isStaff) {
+    if (!isOwner && !isStaff && !isPublic) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

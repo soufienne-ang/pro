@@ -3,12 +3,14 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/server/prisma";
 import { verifyEmailSchema } from "@/lib/schemas/auth";
+import { ZodError } from "zod";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const locale = (request.nextUrl.searchParams.get("locale") as "ar" | "fr") || "ar";
-    const { candidateId, code } = body;
+    const candidateId = body.candidateId;
+    const code = String(body.code ?? "");
 
     verifyEmailSchema.parse({ candidateId, code });
 
@@ -66,8 +68,11 @@ export async function POST(request: NextRequest) {
       message: locale === "ar" ? "تم التحقق من البريد الإلكتروني بنجاح" : "Email vérifié avec succès",
     });
   } catch (error: unknown) {
-    if (error instanceof Error && error.name === "ZodError") {
-      return NextResponse.json({ error: "Validation failed" }, { status: 400 });
+    if (error instanceof ZodError) {
+      return NextResponse.json(
+        { error: "Validation failed", details: error.errors },
+        { status: 400 }
+      );
     }
     console.error("Verification error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

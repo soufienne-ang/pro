@@ -6,6 +6,7 @@ import { prisma } from "@/server/prisma";
 import { ZodError } from "zod";
 import { candidateRegistrationSchema, type CandidateRegistration } from "@/lib/schemas/auth";
 import { sendVerificationEmail } from "@/server/email";
+import { StudyLevel } from "@prisma/client";
 
 type DiplomaRegistration = CandidateRegistration["diplomas"][number];
 type ExperienceRegistration = CandidateRegistration["experiences"][number];
@@ -16,14 +17,18 @@ export async function POST(request: NextRequest) {
     const locale = (request.nextUrl.searchParams.get("locale") as "ar" | "fr") || "ar";
 
     const validated = candidateRegistrationSchema.parse(body);
+    const email = validated.email.trim().toLowerCase();
 
     const existingEmail = await prisma.candidate.findUnique({
-      where: { email: validated.email },
+      where: { email },
     });
 
     if (existingEmail) {
       return NextResponse.json(
-        { error: locale === "ar" ? "البريد الإلكتروني مسجل مسبقاً" : "Cet email est déjà enregistré" },
+        {
+          code: "EMAIL_EXISTS",
+          error: locale === "ar" ? "البريد الإلكتروني مسجل مسبقاً" : "Cet email est déjà enregistré",
+        },
         { status: 400 }
       );
     }
@@ -41,11 +46,11 @@ export async function POST(request: NextRequest) {
 
     const hashedPassword = await hash(validated.password, 12);
 
-    const { code, expiry } = await sendVerificationEmail(validated.email, validated.fullName, locale);
+    const { code, expiry } = await sendVerificationEmail(email, validated.fullName, locale);
 
     const candidate = await prisma.candidate.create({
       data: {
-        email: validated.email,
+        email,
         password: hashedPassword,
         fullName: validated.fullName,
         cin: validated.cin,
@@ -60,7 +65,7 @@ export async function POST(request: NextRequest) {
         hasExperience: validated.hasExperience,
         diplomas: validated.diplomas.length > 0 ? {
           create: validated.diplomas.map((d: DiplomaRegistration) => ({
-            studyLevel: d.studyLevel as any,
+            studyLevel: d.studyLevel as StudyLevel,
             diploma: d.diploma,
             institution: d.institution,
             grade: d.grade,

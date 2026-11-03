@@ -33,7 +33,12 @@ function sanitizeFileName(fileName: string): string {
 
 export async function POST(request: NextRequest) {
   try {
-    const user = await getCurrentUser();
+    let user = null;
+    try {
+      user = await getCurrentUser();
+    } catch {
+      // Session errors should not block temp uploads
+    }
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
     const rawCandidateId = (formData.get("candidateId") as string) || "temp";

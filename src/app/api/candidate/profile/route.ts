@@ -13,7 +13,7 @@ const GOVERNORATES = [
 
 const updateProfileSchema = z.object({
   fullName: z.string().min(3).optional(),
-  phone: z.string().regex(/^\d{2}\s\d{3}\s\d{3}$/).optional(),
+  phone: z.string().regex(/^\d{8}$/).optional(),
   governorate: z.string().refine((v) => GOVERNORATES.includes(v)).optional(),
   delegation: z.string().min(1).optional(),
   smsOptIn: z.boolean().optional(),
@@ -40,6 +40,18 @@ export async function GET() {
         hasExperience: true,
         isEmailVerified: true,
         createdAt: true,
+        documents: {
+          select: {
+            id: true,
+            type: true,
+            fileName: true,
+            fileUrl: true,
+            fileSize: true,
+            mimeType: true,
+            uploadedAt: true,
+          },
+          orderBy: { uploadedAt: "desc" },
+        },
       },
     });
 

@@ -92,10 +92,10 @@ export default function JobsPage() {
       <div className="container mx-auto px-4 py-12">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-slate-900 mb-2">
-            {isRTL ? "منصة المناظرات الخارجية" : "Platform des Concours"}
+            {isRTL ? "منصة المناظرات الخارجية لشركة النهوض بالرياضة" : "Platform des Concours"}
           </h1>
           <p className="text-slate-600 mb-8">
-            {isRTL ? "اكتشف فرص الانتداب في مختلف المؤسسات والوهيئات" : "Découvrez les opportunités dans diverses institutions"}
+            {isRTL ? "اكتشف فرص الانتداب في مختلف المؤسسات العمومية" : "Découvrez les opportunités dans diverses institutions"}
           </p>
 
           <div className="flex justify-center mb-8">
@@ -145,6 +145,9 @@ export default function JobsPage() {
                     <div className="flex items-center justify-center gap-2 mb-3 text-sm text-slate-600">
                       <span>🏢 {job.location}</span>
                       <span className="text-slate-300">|</span>
+                      <span>👥 {job.openings} {isRTL ? "خطة" : "poste(s)"}</span>
+                      <span className="text-slate-300">|</span>
+                      <span>📋 {job.jobType}</span>
                     </div>
                     <div className="text-center text-xs text-slate-500 mb-4">{job.code}</div>
 

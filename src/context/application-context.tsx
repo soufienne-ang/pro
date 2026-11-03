@@ -12,16 +12,20 @@ interface ApplicationData {
   personalInfo?: {
     firstName: string;
     lastName: string;
+    fullName?: string;
     cin: string;
     dateOfBirth: string;
     gender: "MALE" | "FEMALE";
+    familyStatus?: string;
+    numberOfChildren?: number;
+    nationality?: string;
     phone: string;
     governorate: string;
     delegation: string;
+    address: string;
+    postalCode?: string;
     smsOptIn: boolean;
     birthPlace?: string;
-    familyStatus?: string;
-    numberOfChildren?: number;
   };
   academicInfo?: {
     diplomas: Array<{
@@ -29,8 +33,15 @@ interface ApplicationData {
       diploma: string;
       institution: string;
       grade: string;
+
       graduationYear: number;
     }>;
+    moyenneBac?: string;
+    moyenne1ere?: string;
+    moyenne2eme?: string;
+    moyenne3eme?: string;
+    eduLevel?: string;
+    hasCertification?: boolean;
   };
   experienceInfo?: {
     hasExperience: boolean;
@@ -54,6 +65,8 @@ interface ApplicationData {
       fileSize: number;
       mimeType: string;
     }>;
+    confirmedDocs?: string[];
+    docsAcknowledged?: boolean;
   };
   termsAccepted?: boolean;
   certificationSigned?: boolean;
@@ -70,7 +83,6 @@ interface ApplicationContextType {
   setIsDraft: (draft: boolean) => void;
   lastSaved: Date | null;
   setLastSaved: (date: Date | null) => void;
-  validateStep: (step: number) => boolean;
   resetApplication: () => void;
 }
 
@@ -98,36 +110,6 @@ export function ApplicationProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const validateStep = useCallback((step: number): boolean => {
-    switch (step) {
-      case 1:
-        return !!formData.accountInfo?.email
-          && !!formData.accountInfo?.password
-          && formData.accountInfo.password === formData.accountInfo?.confirmPassword
-          && !!formData.accountInfo?.termsAccepted;
-      case 2:
-        return !!formData.personalInfo?.firstName
-          && !!formData.personalInfo?.lastName
-          && !!formData.personalInfo?.cin
-          && !!formData.personalInfo?.phone
-          && !!formData.personalInfo?.governorate
-          && !!formData.personalInfo?.dateOfBirth;
-      case 3:
-        return !!formData.academicInfo?.diplomas?.length;
-      case 4:
-        if (!formData.experienceInfo?.hasExperience) return true;
-        return !!formData.experienceInfo?.experiences?.length;
-      case 5:
-        return !!formData.jobSelection?.jobId;
-      case 6:
-        return true;
-      case 7:
-        return !!(formData.termsAccepted && formData.certificationSigned);
-      default:
-        return true;
-    }
-  }, [formData]);
-
   const resetApplication = useCallback(() => {
     setCurrentStep(1);
     setFormData(initialFormData);
@@ -139,6 +121,7 @@ export function ApplicationProvider({ children }: { children: ReactNode }) {
         localStorage.removeItem(`application_draft_${key}`);
       });
       localStorage.removeItem("application_current_step");
+      localStorage.removeItem("application_current_step_v2");
     }
   }, []);
 
@@ -152,7 +135,6 @@ export function ApplicationProvider({ children }: { children: ReactNode }) {
       setIsDraft,
       lastSaved,
       setLastSaved,
-      validateStep,
       resetApplication,
     }}>
       {children}
@@ -172,7 +154,6 @@ export function useApplication() {
       setIsDraft: () => {},
       lastSaved: null,
       setLastSaved: () => {},
-      validateStep: () => true,
       resetApplication: () => {},
     };
   }

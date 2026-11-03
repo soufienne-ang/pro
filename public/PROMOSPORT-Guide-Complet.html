@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PROMOSPORT - Guide d'utilisation complet</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Cairo:wght@600&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Inter',system-ui,sans-serif;color:#0f172a;background:#f8fafc;line-height:1.6}
+  .page{width:210mm;min-height:297mm;margin:0 auto;background:white;padding:18mm 16mm;page-break-after:always;position:relative}
+  .page:last-child{page-break-after:auto}
+  @media print{.page{margin:0;padding:12mm 14mm;box-shadow:none} body{background:white}}
+  .cover{background:linear-gradient(135deg,#0f172a 0%,#1e40af 55%,#dc2626 100%);color:white;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center}
+  .cover .logo{width:110px;height:110px;background:white;border-radius:24px;display:flex;align-items:center;justify-content:center;font-size:42px;margin-bottom:18px;box-shadow:0 12px 30px rgba(0,0,0,.25)}
+  .cover h1{font-size:36px;font-weight:800;letter-spacing:-1px;line-height:1.1}
+  .cover h2{font-size:18px;font-weight:400;opacity:.9;margin-top:10px}
+  .badge{display:inline-block;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.25);padding:6px 14px;border-radius:999px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;margin-top:18px}
+  .toc h3,.section h2{font-size:15px;letter-spacing:.06em;text-transform:uppercase;color:#dc2626;margin-bottom:10px}
+  .toc ol{padding-left:18px;font-size:13px;color:#334155}
+  .toc ol li{margin:4px 0}
+  .toc ol li span{color:#64748b;font-size:11px}
+  .step-num{width:38px;height:38px;border-radius:999px;background:#dc2626;color:white;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;flex-shrink:0}
+  .step-num.blue{background:#1e40af}
+  .step-num.green{background:#059669}
+  .step-num.amber{background:#d97706}
+  .step-num.purple{background:#7c3aed}
+  .step{display:flex;gap:14px;margin-top:18px}
+  .step-content{flex:1}
+  .step-content h4{font-size:14px;font-weight:700;color:#0f172a}
+  .step-content p{font-size:11.5px;color:#475569;margin-top:4px}
+  .screenshot{border:1px solid #e2e8f0;border-radius:14px;overflow:hidden;background:#f1f5f9;margin-top:10px;box-shadow:0 4px 18px rgba(0,0,0,.06)}
+  .screenshot .bar{height:28px;background:#0f172a;display:flex;align-items:center;gap:6px;padding:0 12px}
+  .screenshot .dot{width:8px;height:8px;border-radius:50%}
+  .screenshot .url{margin-left:8px;color:#94a3b8;font-size:9px;letter-spacing:.04em}
+  .shot-body{padding:14px;background:white}
+  .mock-card{border:1px solid #e2e8f0;border-radius:10px;padding:10px;background:white}
+  .pill{display:inline-block;font-size:9px;font-weight:700;padding:3px 8px;border-radius:999px}
+  .pill-green{background:#dcfce7;color:#166534} .pill-blue{background:#dbeafe;color:#1e40af} .pill-amber{background:#fef3c7;color:#92400e}
+  .kpi{border:1px solid #e2e8f0;border-radius:12px;padding:12px;text-align:center}
+  .kpi b{font-size:22px;display:block}
+  .kpi span{font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:.06em}
+  .callout{border-left:3px solid #dc2626;background:#fef2f2;padding:10px 12px;border-radius:0 10px 10px 0;margin-top:10px;font-size:11px;color:#7f1d1d}
+  .callout.blue{border-left-color:#1e40af;background:#eff6ff;color:#1e3a5f}
+  .two{grid-template-columns:1fr 1fr;display:grid;gap:10px}
+  .three{grid-template-columns:1fr 1fr 1fr;display:grid;gap:10px}
+  .footer{position:absolute;bottom:10mm;left:16mm;right:16mm;display:flex;justify-content:space-between;font-size:8px;color:#94a3b8;border-top:1px solid #f1f5f9;padding-top:6px}
+  h1.page-title{font-size:22px;font-weight:800;letter-spacing:-.5px}
+  h1.page-title small{display:block;font-size:11px;font-weight:600;color:#64748b;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px}
+  ul.bul{font-size:11.5px;color:#334155;padding-left:16px}
+  ul.bul li{margin:4px 0}
+  .arrow{color:#dc2626;font-weight:700}
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<div class="page cover">
+  <div class="logo">🏟️</div>
+  <div style="font-size:11px;letter-spacing:.18em;opacity:.8">PROMOSPORT • TUNISIE</div>
+  <h1>Plateforme<br>Concours & Recrutement</h1>
+  <h2>Guide d'utilisation illustré — Candidat & Administrateur<br>De l'inscription au téléchargement de la demande</h2>
+  <div class="badge">v2026 • FR / AR • Next.js 14 • www.promosport.tn</div>
+  <div style="margin-top:26px;font-size:10px;opacity:.7">Inclut captures d'écran, étapes cliquables et dépannage</div>
+</div>
+
+<!-- TOC -->
+<div class="page toc">
+  <h3>Sommaire</h3>
+  <h1 class="page-title" style="margin-bottom:10px">Comment utiliser ce guide</h1>
+  <ol>
+    <li><b>Parcours Candidat — 10 étapes</b> <span>Découverte → Inscription 6 étapes → Vérification → Dashboard → PDF/Convocation</span></li>
+    <li><b>Parcours Administrateur — 8 étapes</b> <span>Login Admin → Dashboard → Offres → Candidatures → Scoring → Résultats</span></li>
+    <li><b>Annexes</b> <span>Comptes de test, FAQ, URLs, Support</span></li>
+  </ol>
+  <div class="two" style="margin-top:16px">
+    <div class="kpi" style="background:#fef2f2"><b>15–20 min</b><span>Temps candidat</span></div>
+    <div class="kpi" style="background:#eff6ff"><b>6 étapes</b><span>Inscription wizard</span></div>
+  </div>
+  <div class="callout blue" style="margin-top:14px"><b>Astuce :</b> Toutes les pages existent en <b>FR</b> (<code>/fr/…</code>) et <b>AR</b> (<code>/ar/…</code>) — bouton 🌐 en haut. Le guide montre la version FR, l'ordre RTL est miroir en AR.</div>
+  <div style="margin-top:14px" class="screenshot"><div class="bar"><span class="dot" style="background:#ef4444"></span><span class="dot" style="background:#f59e0b"></span><span class="dot" style="background:#22c55e"></span><span class="url">/fr/jobs — /ar/jobs</span></div><div class="shot-body"><div style="font-size:11px;color:#475569;text-align:center">🌐 Sélecteur de langue en header • Le contenu est bilingue (titleFr / titleAr, descriptionFr / descriptionAr)</div></div></div>
+  <div class="footer"><span>PROMOSPORT • Guide 2026</span><span>2 / 10</span></div>
+</div>
+
+<!-- CANDIDAT 1-2 -->
+<div class="page">
+  <h1 class="page-title"><small>Parcours candidat — 1/5</small>Découvrir & postuler</h1>
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-content">
+      <h4>1 — Consulter les concours <span style="font-weight:400;color:#64748b">/fr/jobs</span></h4>
+      <p>Page d'accueil redirige vers <b>Plateforme des Concours</b>. Cartes avec code, lieu, type, ouvertures, date limite. Badge <span class="pill pill-green">Ouvert</span> / <span class="pill" style="background:#fee2e2;color:#991b1b">Terminée</span>. Recherche par code/titre. Clique <b>Voir Détails → /fr/concours/[id]</b>.</p>
+      <div class="screenshot"><div class="bar"><span class="dot" style="background:#ef4444"></span><span class="dot" style="background:#f59e0b"></span><span class="dot" style="background:#22c55e"></span><span class="url">/fr/jobs — cartes des concours</span></div><div class="shot-body">
+        <div class="three">
+          <div class="mock-card" style="text-align:center"><div style="height:54px;background:linear-gradient(135deg,#1e293b,#334155);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#cbd5e1;font-size:10px">IMG / PDF</div><div style="font-size:10px;font-weight:700;margin-top:6px">Technicien Sport</div><div style="font-size:9px;color:#64748b">Tunis • 12 postes • Contractuel</div><div style="margin-top:6px"><span class="pill pill-green">Ouvert</span></div><div style="margin-top:6px;background:#2563eb;color:white;border-radius:6px;padding:5px;font-size:9px;font-weight:700">Voir Détails</div></div>
+          <div class="mock-card" style="text-align:center"><div style="height:54px;background:linear-gradient(135deg,#1e293b,#334155);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#cbd5e1;font-size:10px">CONC-2026-04</div><div style="font-size:10px;font-weight:700;margin-top:6px">Agent Administratif</div><div style="font-size:9px;color:#64748b">Sfax • 5 postes</div><div style="margin-top:6px"><span class="pill pill-green">Ouvert</span></div><div style="margin-top:6px;background:#2563eb;color:white;border-radius:6px;padding:5px;font-size:9px;font-weight:700">Voir Détails</div></div>
+          <div class="mock-card" style="text-align:center;opacity:.7"><div style="height:54px;background:#e2e8f0;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#64748b;font-size:10px">Expiré</div><div style="font-size:10px;font-weight:700;margin-top:6px">Ouvrier</div><div style="font-size:9px;color:#64748b">Nabeul</div><div style="margin-top:6px"><span class="pill" style="background:#fee2e2;color:#991b1b">Terminée</span></div><div style="margin-top:6px;background:#e2e8f0;color:#64748b;border-radius:6px;padding:5px;font-size:9px">Voir Détails</div></div>
+        </div>
+      </div>
+      <div class="callout">Capture réelle : remplace par screenshot de <code>src/app/[locale]/jobs/page.tsx</code> — recherche 🔍 + grille 3 colonnes</div>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-num blue">2</div>
+    <div class="step-content">
+      <h4>2 — Détail d'un concours <span style="font-weight:400;color:#64748b">/fr/concours/[id]</span></h4>
+      <p>Onglets : <b>Description</b> • Documents obligatoires • Conditions d'exclusion • <b>Inscription</b>. Bouton <b>Soumettre ma candidature → /fr/apply?jobId=…</b> (grisé si expiré). Lien PDF officiel. Infos code/lieu/type/ouvertures.</p>
+      <div class="screenshot"><div class="bar"><span class="dot" style="background:#ef4444"></span><span class="dot" style="background:#f59e0b"></span><span class="dot" style="background:#22c55e"></span><span class="url">/fr/concours/[id] — 4 onglets + CTA</span></div><div class="shot-body">
+        <div style="display:flex;gap:6px;justify-content:center"><span style="background:#0f172a;color:white;padding:6px 10px;border-radius:8px;font-size:10px">Description</span><span style="background:#f1f5f9;padding:6px 10px;border-radius:8px;font-size:10px">Documents</span><span style="background:#f1f5f9;padding:6px 10px;border-radius:8px;font-size:10px">Exclusion</span><span style="background:#dbeafe;color:#1e40af;padding:6px 10px;border-radius:8px;font-size:10px;font-weight:700">Inscription</span></div>
+        <div style="margin-top:10px;background:#eff6ff;border:1px solid #dbeafe;border-radius:10px;padding:10px;text-align:center"><div style="font-size:11px;font-weight:700">Postuler à ce concours</div><div style="font-size:9px;color:#475569">Remplissez le formulaire en ligne</div><div style="margin-top:8px;background:#2563eb;color:white;display:inline-block;padding:7px 14px;border-radius:8px;font-size:10px;font-weight:700">Soumettre ma candidature →</div></div>
+      </div></div>
+    </div>
+  </div>
+  <div class="footer"><span>PROMOSPORT • Candidat</span><span>3</span></div>
+</div>
+
+<!-- CANDIDAT 3 - 6 steps wizard -->
+<div class="page">
+  <h1 class="page-title"><small>Parcours candidat — 2/5</small>Inscription en 6 étapes</h1>
+  <p style="font-size:11px;color:#475569;margin-bottom:6px">Deux entrées : <b>A)</b> <code>/fr/register</code> (inscription seule) et <b>B)</b> <code>/fr/apply</code> (wizard complet = inscription + candidature). Ci-dessous le wizard <b>apply</b> qui crée le compte à la volée via <code>POST /api/auth/register</code> puis <code>POST /api/applications</code>.</p>
+  <div class="screenshot"><div class="bar"><span class="dot" style="background:#ef4444"></span><span class="dot" style="background:#f59e0b"></span><span class="dot" style="background:#22c55e"></span><span class="url">/fr/apply — barre de progression + sidebar 6 étapes</span></div><div class="shot-body">
+    <div style="display:flex;gap:10px;align-items:center"><div style="flex:1;height:6px;background:#e2e8f0;border-radius:999px"><div style="width:17%;height:100%;background:#dc2626;border-radius:999px"></div></div><span style="font-size:10px;font-weight:700;color:#64748b">Étape 1/6</span></div>
+    <div style="margin-top:10px;display:grid;grid-template-columns:140px 1fr;gap:12px">
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <div style="background:#fef2f2;border-left:3px solid #dc2626;border-radius:8px;padding:8px;display:flex;gap:8px;align-items:center"><span style="width:22px;height:22px;background:#dc2626;color:white;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700">1</span><span style="font-size:10px;font-weight:700">Informations personnelles</span></div>
+        <div style="background:white;border-left:3px solid #e2e8f0;border-radius:8px;padding:8px;opacity:.6;font-size:10px">2 Parcours académique</div>
+        <div style="background:white;border-left:3px solid #e2e8f0;border-radius:8px;padding:8px;opacity:.6;font-size:10px">3 Expérience</div>
+        <div style="background:white;border-left:3px solid #e2e8f0;border-radius:8px;padding:8px;opacity:.6;font-size:10px">4 Pièces (Optionnel)</div>
+        <div style="background:white;border-left:3px solid #e2e8f0;border-radius:8px;padding:8px;opacity:.6;font-size:10px">5 Choix du poste</div>
+        <div style="background:white;border-left:3px solid #e2e8f0;border-radius:8px;padding:8px;opacity:.6;font-size:10px">6 Validation</div>
+      </div>
+      <div style="border:1px solid #e2e8f0;border-radius:10px;padding:10px">
+        <div style="font-size:11px;font-weight:700">INFORMATIONS PERSONNELLES</div>
+        <div style="margin-top:6px;display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:9px">
+          <div style="border:1px solid #e2e8f0;border-radius:6px;padding:6px">Nom complet *</div><div style="border:1px solid #e2e8f0;border-radius:6px;padding:6px">Prénom *</div>
+          <div style="border:1px solid #e2e8f0;border-radius:6px;padding:6px">CIN 8 chiffres *</div><div style="border:1px solid #e2e8f0;border-radius:6px;padding:6px">Tél 8 chiffres *</div>
+          <div style="border:1px solid #e2e8f0;border-radius:6px;padding:6px">Email *</div><div style="border:1px solid #e2e8f0;border-radius:6px;padding:6px">Mot de passe 8+ *</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="step" style="margin-top:12px">
+    <div class="step-num">3</div>
+    <div class="step-content"><h4>Étape 1 — Compte & Infos perso</h4><p>Email + mot de passe (8+), CIN 8 chiffres, téléphone 8 chiffres, gouvernorat/délégation, adresse, SMS opt-in. Cohérent avec <code>src/app/[locale]/(auth)/register/page.tsx:105</code>. Bouton <b>Suivant</b>.</p></div>
+  </div>
+  <div class="step">
+    <div class="step-num blue">4</div>
+    <div class="step-content"><h4>Étape 2 — Parcours académique</h4><p>Diplômes multiples (BAC → Doctorat), institution, mention, année. Moyennes BAC / années optionnelles. <span class="arrow">→ Ajouter un autre diplôme</span></p></div>
+  </div>
+  <div class="step">
+    <div class="step-num green">5</div>
+    <div class="step-content"><h4>Étape 3 — Expérience (optionnelle)</h4><p>Case <b>J'ai une expérience →</b> ajout entreprise/poste/dates/description. Si décoché, étape validée sans données.</p></div>
+  </div>
+  <div class="step">
+    <div class="step-num amber">6</div>
+    <div class="step-content"><h4>Étape 4 — Pièces justificatives (optionnelle)</h4><p>Checklist CIN, diplôme, photo, CV, etc. + <b>FileDropzone</b> drag-&-drop. Peut être sautée et complétée plus tard dans candidature.</p></div>
+  </div>
+  <div class="footer"><span>PROMOSPORT • Wizard Apply</span><span>4</span></div>
+</div>
+
+<!-- CANDIDAT 4 - steps 5-6 + verification -->
+<div class="page">
+  <h1 class="page-title"><small>Parcours candidat — 3/5</small>Finaliser & vérifier</h1>
+  <div class="step">
+    <div class="step-num purple">7</div>
+    <div class="step-content">
+      <h4>Étape 5 — Choix du poste</h4>
+      <p>Grille des <b>jobs PUBLISHED</b> (<code>GET /api/jobs?status=PUBLISHED</code>). Une seule sélection, surbrillance bleue. Si venu depuis <code>/concours/[id]?jobId=…</code>, pré-sélectionné.</p>
+      <div class="screenshot" style="margin-top:8px"><div class="bar"><span class="dot" style="background:#ef4444"></span><span class="dot" style="background:#f59e0b"></span><span class="dot" style="background:#22c55e"></span><span class="url">Étape 5 — sélection unique</span></div><div class="shot-body"><div class="two"><div class="mock-card" style="border:2px solid #2563eb;box-shadow:0 0 0 2px #dbeafe"><div style="font-size:10px;font-weight:700">Technicien Sport ✓</div><div style="font-size:9px;color:#64748b">CONC-2026-04 • Date limite 30/09/2026</div></div><div class="mock-card" style="opacity:.7"><div style="font-size:10px;font-weight:700">Agent Administratif</div><div style="font-size:9px;color:#64748b">CONC-2026-05</div></div></div></div></div>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-num">8</div>
+    <div class="step-content">
+      <h4>Étape 6 — Validation & envoi</h4>
+      <p>Résumé (nom, CIN, diplômes, poste choisi), cases <b>J'accepte les conditions</b> + <b>Je certifie l'exactitude</b>. <b>Soumettre</b> → <code>ensureCandidateSession()</code> (crée compte si besoin via <code>/api/auth/register</code> puis <code>signIn("credentials")</code>) → <code>POST /api/applications</code>. Succès = ID candidature.</p>
+      <div class="callout" style="margin-top:8px"><b>Attention :</b> Après envoi, les infos ne sont plus modifiables (message amber dans l'UI).</div>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-num blue">9</div>
+    <div class="step-content">
+      <h4>9 — Vérification e-mail <span style="font-weight:400;color:#64748b">/fr/verify-email?candidateId=…</span></h4>
+      <p>Code à 6 chiffres envoyé par <b>Nodemailer SMTP</b> (<code>SMTP_HOST</code>). Saisir code → <code>POST /api/auth/verify</code>. Renvoyer si expiré. Sans vérification, connexion possible mais dashboard peut afficher avertissement.</p>
+      <div class="screenshot"><div class="bar"><span class="dot" style="background:#ef4444"></span><span class="dot" style="background:#f59e0b"></span><span class="dot" style="background:#22c55e"></span><span class="url">/fr/verify-email</span></div><div class="shot-body" style="text-align:center"><div style="display:inline-flex;gap:6px"><span style="width:36px;height:42px;border:1px solid #cbd5e1;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700">4</span><span style="width:36px;height:42px;border:1px solid #cbd5e1;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700">2</span><span style="width:36px;height:42px;border:1px solid #cbd5e1;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700">9</span><span style="width:36px;height:42px;border:1px solid #cbd5e1;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700">1</span><span style="width:36px;height:42px;border:1px solid #cbd5e1;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700">0</span><span style="width:36px;height:42px;border:1px solid #cbd5e1;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:700">3</span></div><div style="margin-top:8px;font-size:10px;color:#64748b">Vérifier → redirection /fr/dashboard</div></div></div>
+    </div>
+  </div>
+  <div class="footer"><span>PROMOSPORT • Finalisation</span><span>5</span></div>
+</div>
+
+<!-- CANDIDAT 5 - Dashboard -->
+<div class="page">
+  <h1 class="page-title"><small>Parcours candidat — 4/5</small>Espace personnel — Dashboard</h1>
+  <p style="font-size:11px;color:#475569">Après <code>signIn("credentials", {userType:"candidate"})</code> → <code>/fr/dashboard</code> (<code>src/app/[locale]/dashboard/page.tsx</code>). Données via <code>/api/candidate/applications</code> + <code>/api/candidate/notifications</code> + <code>/api/candidate/exam-invitations</code>.</p>
+  <div class="screenshot"><div class="bar"><span class="dot" style="background:#ef4444"></span><span class="dot" style="background:#f59e0b"></span><span class="dot" style="background:#22c55e"></span><span class="url">/fr/dashboard — Mes candidatures</span></div><div class="shot-body">
+    <div style="display:flex;justify-content:space-between;align-items:center"><b style="font-size:12px">Bonjour, Mohamed</b><span style="background:#0f172a;color:white;padding:5px 10px;border-radius:8px;font-size:9px">+ Nouvelle candidature</span></div>
+    <div class="three" style="margin-top:10px">
+      <div class="kpi"><b>1</b><span>En attente</span></div>
+      <div class="kpi"><b>0</b><span>En cours</span></div>
+      <div class="kpi"><b>0</b><span>Approuvé</span></div>
+    </div>
+    <div style="margin-top:10px" class="mock-card">
+      <div style="display:flex;justify-content:space-between"><span style="font-size:11px;font-weight:700">Technicien Sport — CONC-2026-04</span><span class="pill pill-amber">En attente</span></div>
+      <div style="font-size:9px;color:#64748b;margin-top:4px">Soumis le 02/09/2026 • 2 documents • Score — • Rang —</div>
+      <div style="margin-top:8px;display:flex;gap:6px">
+        <span style="border:1px solid #e2e8f0;border-radius:6px;padding:5px 8px;font-size:9px">👁️ Aperçu /apply/preview/[id]</span>
+        <span style="background:#fffbeb;border:1px solid #fde68a;border-radius:6px;padding:5px 8px;font-size:9px;color:#92400e">⬇️ Télécharger demande PDF</span>
+      </div>
+    </div>
+    <div style="margin-top:8px;background:#fef3c7;border:1px solid #fde68a;border-radius:8px;padding:8px;font-size:9px;color:#92400e">📄 Convocation : si statut <b>ORAL_TEST</b> ou invitation examen, bouton <b>Télécharger convocation</b> ( /api/candidate/applications/[id]/convocation )</div>
+  </div></div>
+  <ul class="bul" style="margin-top:10px">
+    <li><b>Télécharger demande PDF</b> : <code>GET /api/candidate/applications/[id]/pdf</code> (généré avec <code>@react-pdf/renderer</code>, logo + infos bilingues) ← bouton amber sur chaque carte.</li>
+    <li><b>Aperçu</b> : <code>/fr/apply/preview/[id]</code> — lecture seule de la candidature.</li>
+    <li><b>Convocations examens</b> : section en haut si <code>examInvitations.length &gt; 0</code> — date, salle, horaires, bouton convocation.</li>
+    <li><b>Notifications</b> (col droite) + <b>Liens rapides</b> → <code>/fr/dashboard/settings</code> (profil, mot de passe, SMS opt-in).</li>
+  </ul>
+  <div class="callout blue"><b>Statuts :</b> <span class="pill" style="background:#f1f5f9;color:#475569">Brouillon</span> <span class="pill pill-amber">PENDING</span> <span class="pill pill-blue">UNDER_REVIEW</span> <span class="pill pill-green">APPROVED</span> <span class="pill" style="background:#fee2e2;color:#991b1b">REJECTED</span> <span class="pill" style="background:#f3e8ff;color:#6b21a8">ORAL_TEST</span> <span class="pill" style="background:#ccfbf1;color:#115e59">FINAL_LIST</span></div>
+  <div class="footer"><span>PROMOSPORT • Dashboard Candidat</span><span>6</span></div>
+</div>
+
+<!-- CANDIDAT login + tips -->
+<div class="page">
+  <h1 class="page-title"><small>Parcours candidat — 5/5</small>Connexion & astuces</h1>
+  <div class="step">
+    <div class="step-num">10</div>
+    <div class="step-content">
+      <h4>Se reconnecter <span style="font-weight:400;color:#64748b">/fr/login (onglet Candidat)</span></h4>
+      <p><code>signIn("credentials", {email, password, userType:"candidate"})</code> → <code>auth.ts:52</code> vérifie <code>prisma.candidate</code> + <code>bcrypt.compare</code>. Erreur générique <b>بريد إلكتروني أو كلمة مرور غير صحيحة</b> si mauvais type d'onglet (Admin vs Candidat) — bien choisir l'onglet.</p>
+      <div class="screenshot" style="margin-top:8px"><div class="bar"><span class="dot" style="background:#ef4444"></span><span class="dot" style="background:#f59e0b"></span><span class="dot" style="background:#22c55e"></span><span class="url">/fr/login — deux onglets</span></div><div class="shot-body" style="text-align:center"><div style="display:inline-flex;gap:8px"><span style="background:#0f172a;color:white;padding:7px 16px;border-radius:8px;font-size:11px;font-weight:700">Métrashah (Candidat) ✓</span><span style="background:white;border:1px solid #e2e8f0;padding:7px 16px;border-radius:8px;font-size:11px">Admin</span></div><div style="margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:8px;max-width:360px;margin-left:auto;margin-right:auto"><span style="border:1px solid #e2e8f0;border-radius:8px;padding:8px;font-size:10px">email@example.com</span><span style="border:1px solid #e2e8f0;border-radius:8px;padding:8px;font-size:10px">••••••••</span></div><div style="margin-top:8px;background:#0f172a;color:white;display:inline-block;padding:8px 18px;border-radius:8px;font-size:10px;font-weight:700">Se connecter</div></div></div>
+    </div>
+  </div>
+  <div style="margin-top:14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:12px">
+    <div style="font-size:11px;font-weight:700;margin-bottom:6px">Raccourcis utiles</div>
+    <ul class="bul">
+      <li><code>/fr/apply?jobId=XXX</code> — pré-sélection directe depuis un concours</li>
+      <li><code>/fr/results</code> — consulter résultats par CIN si publiés</li>
+      <li><code>/fr/guide</code> — aide vidéo & FAQ intégrée</li>
+      <li><code>/fr/dashboard/settings</code> — modifier profil / mot de passe / SMS</li>
+    </ul>
+  </div>
+  <div class="callout" style="margin-top:10px"><b>Mot de passe oublié ?</b> <code>/fr/forgot-password</code> → code par e-mail → réinitialisation. Vérifie <code>SMTP_*</code> (Gmail App Password) si e-mail non reçu.</div>
+  <div class="footer"><span>PROMOSPORT • Candidat</span><span>7</span></div>
+</div>
+
+<!-- ADMIN -->
+<div class="page">
+  <h1 class="page-title"><small>Parcours administrateur — 1/3</small>Accès & tableau de bord</h1>
+  <div class="step">
+    <div class="step-num">A1</div>
+    <div class="step-content">
+      <h4>Connexion Admin <span style="font-weight:400;color:#64748b">/fr/login → onglet Admin</span></h4>
+      <p><code>auth.ts:74</code> → <code>prisma.admin.findUnique + bcrypt.compare + isActive check + auditLog</code>. Rôles : <b>SUPER_ADMIN, REVIEWER, HR_AGENT, JURY_MEMBER, COMMISSION</b> (<code>prisma/schema.prisma:11</code>). Comptes de démo (seed) : <code>super@promosport.tn / Admin@123456</code>, <code>hr@promosport.tn / Hr@12345678</code>, <code>jury@promosport.tn / Jury@123456</code>.</p>
+    </div>
+  </div>
+  <div class="screenshot"><div class="bar"><span class="dot" style="background:#ef4444"></span><span class="dot" style="background:#f59e0b"></span><span class="dot" style="background:#22c55e"></span><span class="url">/fr/admin/dashboard</span></div><div class="shot-body">
+    <div class="three">
+      <div class="kpi" style="background:#f0fdf4"><b>3</b><span>Offres publiées</span></div>
+      <div class="kpi" style="background:#eff6ff"><b>1 248</b><span>Total Candidats</span></div>
+      <div class="kpi" style="background:#fffbeb"><b>84</b><span>En attente</span></div>
+    </div>
+    <div style="margin-top:10px" class="two">
+      <div style="border:1px solid #e2e8f0;border-radius:10px;padding:10px"><div style="font-size:10px;font-weight:700">Actions rapides</div><div style="margin-top:6px;display:flex;flex-direction:column;gap:6px;font-size:9px"><span style="border:1px solid #e2e8f0;border-radius:8px;padding:6px">+ Ajouter une nouvelle offre</span><span style="border:1px solid #e2e8f0;border-radius:8px;padding:6px">Examiner les candidatures</span><span style="border:1px solid #e2e8f0;border-radius:8px;padding:6px">Rechercher un candidat</span><span style="border:1px solid #e2e8f0;border-radius:8px;padding:6px">Évaluation et notation</span></div></div>
+      <div style="border:1px solid #e2e8f0;border-radius:10px;padding:10px"><div style="font-size:10px;font-weight:700">Activités récentes</div><div style="font-size:9px;color:#64748b;margin-top:20px;text-align:center">Les activités récentes apparaîtront ici</div></div>
+    </div>
+  </div></div>
+  <div class="step">
+    <div class="step-num blue">A2</div>
+    <div class="step-content"><h4>Navigation admin</h4><p>Sidebar : <b>Dashboard | Offres | Candidatures | Candidats | Scoring | Résultats | Épreuves | Convocations | Rôles | Users</b>. Chaque page bricolée en client (<code>src/app/[locale]/admin/*/page.tsx</code>) avec fetch <code>/api/*</code>.</p></div>
+  </div>
+  <div class="footer"><span>PROMOSPORT • Admin</span><span>8</span></div>
+</div>
+
+<div class="page">
+  <h1 class="page-title"><small>Parcours administrateur — 2/3</small>Gérer offres & candidatures</h1>
+  <div class="step">
+    <div class="step-num">A3</div>
+    <div class="step-content">
+      <h4>Offres <span style="font-weight:400;color:#64748b">/fr/admin/jobs & /fr/admin/jobs/new</span></h4>
+      <p>Filtres <b>Tous / Publié / Brouillon / Fermé</b>. Tableau code, titre FR/AR, lieu, postes, statut cliquable (toggle DRAFT→PUBLISHED→CLOSED via <code>PUT /api/jobs/[id]</code>). Actions Voir / Modifier / Supprimer. Création : titreFr/Ar, description, lieu, type, ouvertures, deadline, <b>requiredDocs</b>, exclusionConditions, imageUrl/pdfUrl, statut.</p>
+      <div class="screenshot"><div class="bar"><span class="dot" style="background:#ef4444"></span><span class="dot" style="background:#f59e0b"></span><span class="dot" style="background:#22c55e"></span><span class="url">/fr/admin/jobs — tableau + filtres</span></div><div class="shot-body"><div style="display:flex;gap:6px;margin-bottom:8px"><span style="background:#0f172a;color:white;padding:4px 10px;border-radius:999px;font-size:9px">Tous</span><span style="background:#dcfce7;color:#166534;padding:4px 10px;border-radius:999px;font-size:9px">Publié</span><span style="background:#f1f5f9;padding:4px 10px;border-radius:999px;font-size:9px">Brouillon</span><span style="background:#fee2e2;color:#991b1b;padding:4px 10px;border-radius:999px;font-size:9px">Fermé</span><span style="margin-left:auto;background:#0f172a;color:white;padding:4px 10px;border-radius:8px;font-size:9px">+ Ajouter</span></div><div style="border:1px solid #e2e8f0;border-radius:8px;overflow:hidden;font-size:9px"><div style="display:grid;grid-template-columns:80px 1fr 80px 70px 100px;background:#f8fafc;padding:6px 8px;font-weight:700"><span>Code</span><span>Titre</span><span>Lieu</span><span>Postes</span><span>Actions</span></div><div style="display:grid;grid-template-columns:80px 1fr 80px 70px 100px;padding:6px 8px;border-top:1px solid #f1f5f9"><span style="font-family:monospace">CONC-04</span><span>Technicien Sport</span><span>Tunis</span><span>12</span><span style="color:#2563eb">Voir • Modifier</span></div></div></div></div>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-num green">A4</div>
+    <div class="step-content"><h4>Candidatures & Candidats</h4><p><b>/fr/admin/applications</b> + <b>/fr/admin/candidates</b> : pagination, filtres statut <code>?status=PENDING</code>, recherche CIN/nom, vue détail candidature (infos perso, diplômes, expériences, documents <code>Bytes</code>, scores, historique). Changement statut → <code>POST /api/applications/[id]/status</code> + <code>StatusHistory</code>.</p></div>
+  </div>
+  <div class="step">
+    <div class="step-num amber">A5</div>
+    <div class="step-content"><h4>Scoring & Épreuves</h4><p><b>/fr/admin/scoring/[jobId]</b> : critères (<code>ScoredCriteria</code> + <code>Score</code>) pondérés. <b>/fr/admin/epreuves</b> : créer Exam (WRITTEN/ORAL/PRACTICAL/SPORTS, coeff, durée) + ExamSession (date, salle <code>Room</code>, capacité) + saisir notes via <code>ExamResult</code> (score, present).</p></div>
+  </div>
+  <div class="footer"><span>PROMOSPORT • Admin Offres</span><span>9</span></div>
+</div>
+
+<div class="page">
+  <h1 class="page-title"><small>Parcours administrateur — 3/3</small>Résultats, convocations & rôles</h1>
+  <div class="step">
+    <div class="step-num purple">A6</div>
+    <div class="step-content">
+      <h4>Résultats & Convocations</h4>
+      <p><b>/fr/admin/results</b> : publier/archiver résultats par offre (<code>Job.resultsPublished</code>). Export <b>XLSX</b> / <b>PDF</b> (bouton Export). <b>/fr/admin/convocations/templates</b> : modèles bilingues (header/footer/logoUrl/fields JSON). Génération convocation → <code>GET /api/candidate/applications/[id]/convocation</code> (puppeteer + chromium).</p>
+    </div>
+  </div>
+  <div class="step">
+    <div class="step-num">A7</div>
+    <div class="step-content"><h4>Rôles & Permissions — Salles</h4><p><b>/fr/admin/roles</b> → <code>RolePermission</code> JSON par rôle. <b>/fr/admin/users</b> → gestion Admin (isActive, role). <b>/fr/admin/epreuves/rooms</b> → CRUD salles (name, capacity, location, equipment).</p></div>
+  </div>
+  <div style="margin-top:14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:12px">
+    <div style="font-size:11px;font-weight:700">Flux complet — de bout en bout</div>
+    <div style="margin-top:8px;display:flex;align-items:center;gap:6px;font-size:9px;flex-wrap:wrap;justify-content:center">
+      <span style="background:#dbeafe;color:#1e40af;padding:5px 8px;border-radius:999px;font-weight:700">Admin publie offre</span><span class="arrow">→</span>
+      <span style="background:#fef3c7;padding:5px 8px;border-radius:999px;font-weight:700">Candidat s'inscrit (6 étapes)</span><span class="arrow">→</span>
+      <span style="background:#dcfce7;color:#166534;padding:5px 8px;border-radius:999px;font-weight:700">Admin examine</span><span class="arrow">→</span>
+      <span style="background:#f3e8ff;color:#6b21a8;padding:5px 8px;border-radius:999px;font-weight:700">Scoring / Épreuves</span><span class="arrow">→</span>
+      <span style="background:#fee2e2;color:#991b1b;padding:5px 8px;border-radius:999px;font-weight:700">Publication résultats</span><span class="arrow">→</span>
+      <span style="background:#0f172a;color:white;padding:5px 8px;border-radius:999px;font-weight:700">Candidat télécharge PDF/Convocation</span>
+    </div>
+  </div>
+  <div class="callout blue" style="margin-top:12px"><b>URLs clés à retenir :</b> <code>/fr/jobs</code> • <code>/fr/concours/[id]</code> • <code>/fr/apply</code> • <code>/fr/login</code> • <code>/fr/dashboard</code> • <code>/fr/admin/dashboard</code> • <code>/api/jobs</code> • <code>/api/applications</code></div>
+  <div class="footer"><span>PROMOSPORT • Flux global</span><span>10</span></div>
+</div>
+
+<!-- ANNEXE -->
+<div class="page">
+  <h1 class="page-title"><small>Annexes</small>Comptes, FAQ & support</h1>
+  <div class="two" style="margin-top:8px">
+    <div style="border:1px solid #e2e8f0;border-radius:12px;padding:12px">
+      <div style="font-size:11px;font-weight:800;color:#dc2626;letter-spacing:.06em;text-transform:uppercase">Comptes de test</div>
+      <div style="margin-top:8px;font-size:11px;line-height:1.7">
+        <b>Admin</b> (onglet Admin) :<br>
+        <code style="background:#f1f5f9;padding:2px 6px;border-radius:6px">super@promosport.tn / Admin@123456</code> — SUPER_ADMIN<br>
+        <code style="background:#f1f5f9;padding:2px 6px;border-radius:6px">hr@promosport.tn / Hr@12345678</code> — HR_AGENT<br>
+        <code style="background:#f1f5f9;padding:2px 6px;border-radius:6px">jury@promosport.tn / Jury@123456</code> — JURY_MEMBER<br><br>
+        <b>Candidat</b> (onglet Candidat) : créer via <code>/fr/apply</code> ou utiliser compte existant vérifié. Si <b>بريد إلكتروني أو كلمة مرور غير صحيحة</b> → vérifier onglet + <code>DATABASE_URL</code> + <code>NEXTAUTH_SECRET</code> en Prod.
+      </div>
+    </div>
+    <div style="border:1px solid #e2e8f0;border-radius:12px;padding:12px">
+      <div style="font-size:11px;font-weight:800;color:#1e40af;letter-spacing:.06em;text-transform:uppercase">Stack & env</div>
+      <div style="margin-top:8px;font-size:10.5px;line-height:1.7;color:#334155">
+        Next.js 14.2.35 • Prisma 5 + Neon PostgreSQL • NextAuth JWT • Tailwind • next-intl (fr/ar) • Nodemailer (Gmail App Password) • Vercel Blob<br>
+        <code style="background:#f1f5f9;padding:2px 6px;border-radius:6px">DATABASE_URL</code> doit contenir <code>?pgbouncer=true</code> sur Vercel pooler<br>
+        <code style="background:#f1f5f9;padding:2px 6px;border-radius:6px">NEXTAUTH_URL=https://…vercel.app</code> + <code>NEXTAUTH_SECRET=openssl rand -base64 32</code>
+      </div>
+    </div>
+  </div>
+  <div style="margin-top:10px;border:1px solid #e2e8f0;border-radius:12px;padding:12px">
+    <div style="font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#059669">FAQ rapide</div>
+    <ul class="bul" style="margin-top:6px">
+      <li><b>Le PDF ne se télécharge pas ?</b> Vérifier que la candidature est bien en base (<code>/api/candidate/applications</code> 200) et que <code>@react-pdf/renderer</code> a buildé sans erreur sur Vercel.</li>
+      <li><b>E-mail de vérification non reçu ?</b> Vérifier <code>SMTP_HOST/PORT/USER/PASS</code> et logs <code>SKIP_EMAIL_SEND=false</code>. Tester avec <code>node test-smtp.ts</code>.</li>
+      <li><b>Dashboard vide après inscription ?</b> L'inscription via <code>/apply</code> fait <code>signIn</code> auto — si 401, refaire login <code>/fr/login</code> onglet Candidat.</li>
+      <li><b>Admin ne voit pas les offres ?</b> Filtre <code>ALL</code> vs <code>PUBLISHED</code> — en brouillon elles n'apparaissent pas côté candidat.</li>
+    </ul>
+  </div>
+  <div style="margin-top:10px;background:#0f172a;color:white;border-radius:12px;padding:14px;display:flex;justify-content:space-between;align-items:center">
+    <div><div style="font-size:12px;font-weight:800">Besoin d'aide ?</div><div style="font-size:10px;opacity:.8">support@promosport.tn • Guide vidéo : /fr/guide</div></div>
+    <div style="background:white;color:#0f172a;padding:8px 14px;border-radius:8px;font-size:11px;font-weight:700">© 2026 PROMOSPORT</div>
+  </div>
+  <p style="margin-top:10px;font-size:8px;color:#94a3b8;text-align:center">Généré depuis le code : src/app/[locale]/jobs, concours/[id], apply, dashboard, admin/*, server/auth.ts, prisma/schema.prisma • Remplacer les mockups par de vrais screenshots (Puppeteer: npx next dev + node scripts/capture.mjs)</p>
+  <div class="footer"><span>PROMOSPORT • Annexes</span><span>11</span></div>
+</div>
+
+</body>
+</html>

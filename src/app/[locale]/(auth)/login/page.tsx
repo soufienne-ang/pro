@@ -62,6 +62,9 @@ export default function LoginPage() {
           <CardDescription className="text-center">
             {isRTL ? "أدخل بياناتك لتسجيل الدخول" : "Entrez vos identifiants pour vous connecter"}
           </CardDescription>
+          <CardDescription className="text-xs text-amber-700 mt-1 text-center">
+            {isRTL ? "تخضع المعلومات التي تقدمها في هذا النموذج للحماية بموجب القانون العام لحماية البيانات (GDPR). سيتم استخدام بياناتك فقط لأغراض معالجة طلب الترشح الخاص بك." : "Entrez vos identifiants pour vous connecter"}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 gap-2 mb-6">
@@ -70,7 +73,7 @@ export default function LoginPage() {
               onClick={() => setUserType("candidate")}
               className="text-sm"
             >
-              {isRTL ? "مرشح" : "Candidat"}
+              {isRTL ? "مترشح" : "Candidat"}
             </Button>
             <Button
               variant={userType === "admin" ? "default" : "outline"}

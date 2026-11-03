@@ -37,3 +37,14 @@ next-env.d.ts
 
 .vercel
 .env*
+
+# local uploads and logs
+/public/uploads/
+*.log
+temp/
+broken-pkgs.json
+check-packages.js
+fix-broken-packages*.js
+dev*.log
+build.log
+npm-shrinkwrap.json

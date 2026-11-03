@@ -45,7 +45,7 @@ export async function middleware(req: NextRequest) {
 
   if (pathname.includes("/dashboard") && token?.role === "CANDIDATE") {
     if (!token.isEmailVerified) {
-      return NextResponse.redirect(new URL(`/${locale}/verify-email`, req.url));
+      return NextResponse.redirect(new URL(`/${locale}/verify-email?candidateId=${token.id}`, req.url));
     }
   }
 

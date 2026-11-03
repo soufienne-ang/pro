@@ -50,7 +50,12 @@ export async function GET() {
       orderBy: { createdAt: "desc" },
     });
 
-    return NextResponse.json({ applications });
+    const apps = applications.map((a) => ({
+      ...a,
+      hasConvocation: !!a.convocationPath,
+    }));
+
+    return NextResponse.json({ applications: apps });
   } catch (error) {
     console.error("Failed to fetch candidate applications:", error);
     return NextResponse.json({ error: "Failed to fetch applications" }, { status: 500 });

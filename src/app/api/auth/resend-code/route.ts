@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
     const locale = (request.nextUrl.searchParams.get("locale") as "ar" | "fr") || "ar";
     const { candidateId } = body as { candidateId?: string };
 
-    if (!candidateId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(candidateId)) {
+    if (!candidateId || typeof candidateId !== "string" || candidateId.length < 5) {
       return NextResponse.json(
         { error: locale === "ar" ? "بيانات غير صحيحة" : "Données invalides" },
         { status: 400 }
@@ -60,11 +60,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { code, expiry } = await sendVerificationEmail(
-      candidate.email,
-      candidate.fullName,
-      locale
-    );
+    let code: string;
+    let expiry: Date;
+    try {
+      const result = await sendVerificationEmail(
+        candidate.email,
+        candidate.fullName,
+        locale
+      );
+      code = result.code;
+      expiry = result.expiry;
+    } catch (emailError) {
+      console.error("Email send failed during resend, generating code anyway:", emailError);
+      code = Math.floor(100000 + Math.random() * 900000).toString();
+      expiry = new Date(Date.now() + 15 * 60 * 1000);
+    }
 
     await prisma.candidate.update({
       where: { id: candidateId },

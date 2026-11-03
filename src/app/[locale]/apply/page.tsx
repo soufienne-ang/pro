@@ -11,20 +11,54 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { FileDropzone, UploadedFile } from "@/components/file-dropzone";
 import { useApplication } from "@/context/application-context";
+import { HelpCircle, FileText } from "lucide-react";
 
 const GOVERNORATES = [
-  "Ariana", "Béja", "Ben Arous", "Bizerte", "Gabès", "Gafsa", "Jendouba", "Kairouan",
-  "Kasserine", "Kébili", "Le Kef", "Mahdia", "Manouba", "Medenine", "Monastir", "Nabeul",
-  "Sfax", "Sidi Bouzid", "Siliana", "Sousse", "Tataouine", "Tozeur", "Tunis", "Zaghouan",
+  { value: "Ariana", labelAr: "أريانة" },
+  { value: "Béja", labelAr: "باجة" },
+  { value: "Ben Arous", labelAr: "بن عروس" },
+  { value: "Bizerte", labelAr: "بنزرت" },
+  { value: "Gabès", labelAr: "قابس" },
+  { value: "Gafsa", labelAr: "قفصة" },
+  { value: "Jendouba", labelAr: "جندوبة" },
+  { value: "Kairouan", labelAr: "القيروان" },
+  { value: "Kasserine", labelAr: "القصرين" },
+  { value: "Kébili", labelAr: "قبلي" },
+  { value: "Le Kef", labelAr: "الكاف" },
+  { value: "Mahdia", labelAr: "المهدية" },
+  { value: "Manouba", labelAr: "منوبة" },
+  { value: "Medenine", labelAr: "مدنين" },
+  { value: "Monastir", labelAr: "المنستير" },
+  { value: "Nabeul", labelAr: "نابل" },
+  { value: "Sfax", labelAr: "صفاقس" },
+  { value: "Sidi Bouzid", labelAr: "سيدي بوزيد" },
+  { value: "Siliana", labelAr: "سليانة" },
+  { value: "Sousse", labelAr: "سوسة" },
+  { value: "Tataouine", labelAr: "تطاوين" },
+  { value: "Tozeur", labelAr: "توزر" },
+  { value: "Tunis", labelAr: "تونس" },
+  { value: "Zaghouan", labelAr: "زغوان" },
 ];
 
 const STUDY_LEVELS = [
-  { value: "BAC", label: "Baccalauréat" },
-  { value: "BAC_PLUS_2", label: "Bac + 2 (DEUG)" },
-  { value: "LICENCE", label: "Licence (Bac + 3)" },
-  { value: "MAITRISE", label: "Maîtrise (Bac + 4)" },
-  { value: "MASTER", label: "Master (Bac + 5)" },
-  { value: "DOCTORAT", label: "Doctorat" },
+  { value: "BAC", label: "Baccalauréat", labelAr: "بكالوريا" },
+  { value: "BAC_PLUS_2", label: "Bac + 2 (DEUG)", labelAr: "باك + 2" },
+  { value: "LICENCE", label: "Licence (Bac + 3)", labelAr: "إجازة (باك + 3)" },
+  { value: "MAITRISE", label: "Maîtrise (Bac + 4)", labelAr: "أستاذية (باك + 4)" },
+  { value: "MASTER", label: "Master (Bac + 5)", labelAr: "ماجستير (باك + 5)" },
+  { value: "DOCTORAT", label: "Doctorat", labelAr: "دكتوراه" },
+];
+
+const DOCUMENT_TYPES = [
+  { key: "cin", labelFr: "Copie de la CIN", labelAr: "نسخة من بطاقة التعريف الوطنية" },
+  { key: "diploma", labelFr: "Copie du diplôme ou attestation de réussite", labelAr: "نسخة من الشهادة أو شهادة النجاح" },
+  { key: "photo", labelFr: "Photo d'identité récente", labelAr: "صورة شمسية حديثة" },
+  { key: "cv", labelFr: "Curriculum Vitae (CV)", labelAr: "السيرة الذاتية" },
+  { key: "letter", labelFr: "Lettre de motivation", labelAr: "رسالة تحفيز" },
+  { key: "extract", labelFr: "Extrait de naissance n°3", labelAr: "مضمون ولادة عدد 3" },
+  { key: "record", labelFr: "Casier judiciaire", labelAr: "بطاقة عدد 3" },
+  { key: "military", labelFr: "Attestation de situation militaire", labelAr: "شهادة الوضعية تجاه الخدمة الوطنية" },
+  { key: "work", labelFr: "Attestation de travail (si expérience)", labelAr: "شهادة عمل (إن وجد)" },
 ];
 
 const FAMILY_STATUSES = [
@@ -34,20 +68,57 @@ const FAMILY_STATUSES = [
   { value: "VEUF", labelFr: "Veuf(ve)", labelAr: "أرمل" },
 ];
 
+const NATIONALITIES = [
+  { value: "Tunisienne", labelFr: "Tunisienne", labelAr: "تونسية" },
+  { value: "Autre", labelFr: "Autre", labelAr: "أخرى" },
+];
+
+// Job selection deliberately precedes the academic step: the job's track
+// (ACADEMIC = diploma required, MANUAL = declared education level) determines
+// what step 3 must collect. Selecting later would invalidate step 3 retroactively.
 const STEPS = [
   { num: 1, labelFr: "Informations personnelles", labelAr: "المعلومات الشخصية" },
-  { num: 2, labelFr: "Parcours académique", labelAr: "المسار الأكاديمي" },
-  { num: 3, labelFr: "Expérience professionnelle", labelAr: "الخبرة المهنية" },
-  { num: 4, labelFr: "Pièces justificatives", labelAr: "الوثائق المطلوبة" },
-  { num: 5, labelFr: "Choix du poste", labelAr: "اختيار الوظيفة" },
+  { num: 2, labelFr: "Choix du poste", labelAr: "اختيار الوظيفة" },
+  { num: 3, labelFr: "Parcours académique", labelAr: "المسار الأكاديمي" },
+  { num: 4, labelFr: "Expérience professionnelle", labelAr: "الخبرة المهنية" },
+  { num: 5, labelFr: "Pièces justificatives", labelAr: "الوثائق المطلوبة" },
   { num: 6, labelFr: "Validation", labelAr: "التأكيد" },
 ];
+
+// Declared school level, used by MANUAL-track jobs (maintenance, multi-skilled,
+// cleaners) where no academic diploma is required.
+const EDU_LEVELS = [
+  { value: "NONE", labelFr: "Sans diplôme", labelAr: "بدون شهادة" },
+  { value: "PRIMARY", labelFr: "Primaire", labelAr: "ابتدائي" },
+  { value: "MIDDLE", labelFr: "Collège", labelAr: "إعدادي" },
+  { value: "SECONDARY", labelFr: "Secondaire", labelAr: "ثانوي" },
+  { value: "VOCATIONAL", labelFr: "Formation professionnelle", labelAr: "تكوين مهني" },
+];
+
+const EDU_LEVEL_ORDER: Record<string, number> = {
+  NONE: 0,
+  PRIMARY: 1,
+  MIDDLE: 2,
+  SECONDARY: 3,
+  VOCATIONAL: 4,
+};
+
+const EDU_LEVEL_LABEL: Record<string, { fr: string; ar: string }> = EDU_LEVELS.reduce(
+  (acc, l) => ({ ...acc, [l.value]: { fr: l.labelFr, ar: l.labelAr } }),
+  {} as Record<string, { fr: string; ar: string }>
+);
+
+const PROFILE_LABEL: Record<string, { fr: string; ar: string }> = {
+  ACADEMIC: { fr: "Diplôme requis", ar: "شهادة دراسية مطلوبة" },
+  MANUAL: { fr: "Pas de diplôme requis", ar: "بدون شهادة دراسية" },
+};
 
 interface Diploma {
   studyLevel: string;
   diploma: string;
   institution: string;
   grade: string;
+
   graduationYear: number;
 }
 
@@ -89,7 +160,15 @@ export default function ApplicationWizard() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [successAppId, setSuccessAppId] = useState<string | null>(null);
-  const [jobs, setJobs] = useState<Array<{ id: string; code: string; titleFr: string; titleAr: string; deadline: string }>>([]);
+  const [jobs, setJobs] = useState<Array<{
+    id: string;
+    code: string;
+    titleFr: string;
+    titleAr: string;
+    deadline: string;
+    profile?: string;
+    minEduLevel?: string;
+  }>>([]);
 
   const [accountData, setAccountData] = useState({
     email: "",
@@ -100,6 +179,7 @@ export default function ApplicationWizard() {
 
   const [personalData, setPersonalData] = useState({
     lastName: formData.personalInfo?.lastName || "",
+    fullName: formData.personalInfo?.fullName || formData.personalInfo?.lastName || "",
     firstName: formData.personalInfo?.firstName || "",
     cin: formData.personalInfo?.cin || "",
     dateOfBirth: formData.personalInfo?.dateOfBirth || "",
@@ -107,9 +187,12 @@ export default function ApplicationWizard() {
     gender: (formData.personalInfo?.gender || "MALE") as "MALE" | "FEMALE",
     familyStatus: formData.personalInfo?.familyStatus || "",
     numberOfChildren: formData.personalInfo?.numberOfChildren ?? 0,
+    nationality: formData.personalInfo?.nationality || "",
     phone: formData.personalInfo?.phone || "",
     governorate: formData.personalInfo?.governorate || "",
     delegation: formData.personalInfo?.delegation || "",
+    address: formData.personalInfo?.address || "",
+    postalCode: formData.personalInfo?.postalCode || "",
     smsOptIn: formData.personalInfo?.smsOptIn ?? true,
   });
 
@@ -117,6 +200,16 @@ export default function ApplicationWizard() {
     formData.academicInfo?.diplomas?.length
       ? formData.academicInfo.diplomas
       : [{ studyLevel: "", diploma: "", institution: "", grade: "", graduationYear: new Date().getFullYear() }]
+  );
+
+  const [moyenneBac, setMoyenneBac] = useState(formData.academicInfo?.moyenneBac || "");
+  const [moyenne1ere, setMoyenne1ere] = useState(formData.academicInfo?.moyenne1ere || "");
+  const [moyenne2eme, setMoyenne2eme] = useState(formData.academicInfo?.moyenne2eme || "");
+  const [moyenne3eme, setMoyenne3eme] = useState(formData.academicInfo?.moyenne3eme || "");
+
+  const [eduLevel, setEduLevel] = useState(formData.academicInfo?.eduLevel || "");
+  const [hasCertification, setHasCertification] = useState(
+    Boolean(formData.academicInfo?.hasCertification)
   );
 
   const [hasExperience, setHasExperience] = useState(formData.experienceInfo?.hasExperience ?? false);
@@ -132,22 +225,29 @@ export default function ApplicationWizard() {
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>(
     (formData.documents?.files as UploadedFile[] | undefined) || []
   );
+  const [confirmedDocs, setConfirmedDocs] = useState<string[]>([]);
+  const [docsAcknowledged, setDocsAcknowledged] = useState(false);
 
   const [termsAccepted, setTermsAccepted] = useState(formData.termsAccepted || false);
   const [certificationSigned, setCertificationSigned] = useState(formData.certificationSigned || false);
 
+  // Bumped to _v2: the wizard steps were reordered (job selection moved from
+  // step 5 to step 2), so stored step numbers from the old order are invalid.
+  const STEP_STORAGE_KEY = "application_current_step_v2";
+
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const savedStep = localStorage.getItem("application_current_step");
+      const savedStep = localStorage.getItem(STEP_STORAGE_KEY);
       if (savedStep) {
-        setCurrentStep(parseInt(savedStep));
+        const parsed = parseInt(savedStep);
+        if (parsed >= 1 && parsed <= 6) setCurrentStep(parsed);
       }
     }
   }, [setCurrentStep]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      localStorage.setItem("application_current_step", String(currentStep));
+      localStorage.setItem(STEP_STORAGE_KEY, String(currentStep));
     }
   }, [currentStep]);
 
@@ -186,6 +286,57 @@ export default function ApplicationWizard() {
     return () => clearInterval(interval);
   }, [handleAutoSave]);
 
+  const hasCompleteDiploma = diplomas.some(
+    (d) => d.studyLevel && d.diploma && d.institution && d.grade
+  );
+
+  const selectedJobData = jobs.find((j) => j.id === selectedJob);
+  const selectedProfile = selectedJobData?.profile || "ACADEMIC";
+
+  // Explains why the chosen job's academic requirements are not yet met.
+  // Rendered on the academic step (3), where the candidate can act on it.
+  const eligibilityError: string | null = (() => {
+    if (!selectedJobData) return null;
+    if (selectedProfile === "MANUAL") {
+      if (!eduLevel) {
+        return isRTL
+          ? "هذه الوظيفة لا تتطلب شهادة دراسية، لكن يجب تحديد مستواك الدراسي"
+          : "Ce poste n'exige pas de diplôme, mais vous devez indiquer votre niveau d'études";
+      }
+      const required = selectedJobData.minEduLevel || "SECONDARY";
+      if ((EDU_LEVEL_ORDER[eduLevel] ?? 0) < (EDU_LEVEL_ORDER[required] ?? 0)) {
+        const label = EDU_LEVEL_LABEL[required];
+        return isRTL
+          ? `مستواك الحالي أقل من المطلوب لهذه الوظيفة: ${label?.ar ?? required}`
+          : `Votre niveau est inférieur au minimum requis pour ce poste : ${label?.fr ?? required}`;
+      }
+      return null;
+    }
+    if (!hasCompleteDiploma) {
+      return isRTL
+        ? "هذه الوظيفة تتطلب شهادة دراسية كاملة"
+        : "Ce poste exige au moins un diplôme complet";
+    }
+    return null;
+  })();
+
+  // The operational track does not require prior experience, so the experience
+  // step (4) is not part of its form and navigation steps straight over it.
+  const isManualTrack = selectedProfile === "MANUAL";
+  const EXPERIENCE_STEP = 4;
+
+  const getNextStep = (from: number): number => {
+    let next = from + 1;
+    if (isManualTrack && next === EXPERIENCE_STEP) next = EXPERIENCE_STEP + 1;
+    return Math.min(next, 6);
+  };
+
+  const getPrevStep = (from: number): number => {
+    let prev = from - 1;
+    if (isManualTrack && prev === EXPERIENCE_STEP) prev = EXPERIENCE_STEP - 1;
+    return Math.max(prev, 1);
+  };
+
   const validateLocalStep = (step: number): boolean => {
     switch (step) {
       case 1:
@@ -207,16 +358,25 @@ export default function ApplicationWizard() {
           !!personalData.familyStatus
         );
       case 2:
-        return diplomas.some(
-          (d) => d.studyLevel && d.diploma && d.institution && d.grade
-        );
+        // Only requires a selection. Academic requirements are validated in
+        // step 3, where the candidate can actually satisfy them.
+        return !!selectedJob;
       case 3:
+        // Academic requirements depend on the track of the chosen job.
+        if (selectedProfile === "MANUAL") {
+          if (!eduLevel) return false;
+          const required = selectedJobData?.minEduLevel || "SECONDARY";
+          return (EDU_LEVEL_ORDER[eduLevel] ?? 0) >= (EDU_LEVEL_ORDER[required] ?? 0);
+        }
+        // ACADEMIC (and the transient no-job-selected case): diploma required.
+        return hasCompleteDiploma;
+      case 4:
+        // Not part of the operational track's form; navigation skips it.
+        if (isManualTrack) return true;
         if (!hasExperience) return true;
         return experiences.some((e) => e.company && e.position && e.startDate);
-      case 4:
-        return true;
       case 5:
-        return !!selectedJob;
+        return true;
       case 6:
         return termsAccepted && certificationSigned;
       default:
@@ -228,10 +388,16 @@ export default function ApplicationWizard() {
     if (step === 1) {
       updateFormData("accountInfo", accountData);
       updateFormData("personalInfo", personalData);
-    } else if (step === 2) updateFormData("academicInfo", { diplomas });
-    else if (step === 3) updateFormData("experienceInfo", { hasExperience, experiences });
-    else if (step === 4) updateFormData("documents", { files: uploadedFiles });
-    else if (step === 5) updateFormData("jobSelection", { jobId: selectedJob });
+    }     else if (step === 2) updateFormData("jobSelection", { jobId: selectedJob });
+    else if (step === 3) {
+      // Operational candidates have no diplomas or grades; storing empty
+      // arrays/strings keeps the submission payload shape identical.
+      updateFormData("academicInfo", isManualTrack
+        ? { diplomas: [], moyenneBac: "", moyenne1ere: "", moyenne2eme: "", moyenne3eme: "", eduLevel, hasCertification }
+        : { diplomas, moyenneBac, moyenne1ere, moyenne2eme, moyenne3eme, eduLevel, hasCertification });
+    }
+    else if (step === 4) updateFormData("experienceInfo", { hasExperience, experiences });
+    else if (step === 5) updateFormData("documents", { files: uploadedFiles });
   };
 
   const ensureCandidateSession = async (): Promise<string | null> => {
@@ -252,11 +418,14 @@ export default function ApplicationWizard() {
       email: accountData.email,
       password: accountData.password,
       confirmPassword: accountData.confirmPassword,
-      fullName: `${personalData.firstName} ${personalData.lastName}`,
+      fullName: personalData.fullName,
       cin: personalData.cin,
       dateOfBirth: personalData.dateOfBirth,
       gender: personalData.gender,
       phone: formatPhone(personalData.phone),
+      nationality: personalData.nationality,
+      address: personalData.address,
+      postalCode: personalData.postalCode,
       governorate: personalData.governorate,
       delegation: personalData.delegation,
       smsOptIn: personalData.smsOptIn,
@@ -268,22 +437,25 @@ export default function ApplicationWizard() {
       body: JSON.stringify(registrationPayload),
     });
 
-    if (!registerRes.ok) {
-      const data = await registerRes.json();
-      const errText = typeof data.error === "string" ? data.error : "";
-      const isDuplicate =
-        errText.toLowerCase().includes("email") ||
-        errText.toLowerCase().includes("déjà") ||
-        errText.includes("مسجل");
+    const registerData = registerRes.ok ? await registerRes.json().catch(() => ({})) : await registerRes.json().catch(() => ({}));
 
-      if (!isDuplicate) {
-        setError(errText || (isRTL ? "فشل إنشاء الحساب" : "Échec de la création du compte"));
-        return null;
-      }
+    if (!registerRes.ok) {
+      const errText = typeof registerData.error === "string" ? registerData.error : "";
+      const isDuplicate = registerData.code === "EMAIL_EXISTS";
+
+      setError(
+        isDuplicate
+          ? (isRTL
+            ? "هذا البريد الإلكتروني مسجل مسبقاً. يرجى تسجيل الدخول أو استعمال بريد إلكتروني آخر."
+            : "Cet email est déjà enregistré. Connectez-vous ou utilisez une autre adresse email.")
+          : (errText || (isRTL ? "فشل إنشاء الحساب" : "Échec de la création du compte"))
+      );
+      return null;
     }
 
+    const normalizedEmail = accountData.email.trim().toLowerCase();
     const signInResult = await signIn("credentials", {
-      email: accountData.email,
+      email: normalizedEmail,
       password: accountData.password,
       userType: "candidate",
       redirect: false,
@@ -296,6 +468,12 @@ export default function ApplicationWizard() {
           : "Échec de connexion. Vérifiez votre email et mot de passe."
       );
       return null;
+    }
+
+    const candidateId = registerData.candidateId;
+
+    if (candidateId) {
+      return candidateId;
     }
 
     for (let attempt = 0; attempt < 5; attempt++) {
@@ -314,22 +492,75 @@ export default function ApplicationWizard() {
     setError("");
 
     if (!validateLocalStep(currentStep)) {
-      setError(
-        isRTL
-          ? "يرجى إكمال جميع الحقول المطلوبة"
-          : "Veuillez remplir tous les champs obligatoires"
-      );
+      setError(stepErrorMessage(currentStep));
       return;
     }
 
     syncStepToContext(currentStep);
-    setCurrentStep(Math.min(currentStep + 1, 6));
+    setCurrentStep(getNextStep(currentStep));
+  };
+
+  // Specific, actionable message per step instead of a generic
+  // "fill all required fields", which left candidates stuck with no clue
+  // about what was missing or where.
+  const stepErrorMessage = (step: number): string => {
+    switch (step) {
+      case 2:
+        return isRTL ? "يرجى اختيار الوظيفة" : "Veuillez sélectionner un poste";
+      case 3:
+        if (selectedProfile === "MANUAL") {
+          if (!eduLevel) {
+            return isRTL
+              ? "يرجى تحديد مستواك الدراسي"
+              : "Veuillez sélectionner votre niveau d'études";
+          }
+          return isRTL
+            ? `مستواك الأدنى هو: ${EDU_LEVEL_LABEL[selectedJobData?.minEduLevel || "SECONDARY"]?.ar}`
+            : `Votre niveau est inférieur au minimum requis (${EDU_LEVEL_LABEL[selectedJobData?.minEduLevel || "SECONDARY"]?.fr})`;
+        }
+        return isRTL
+          ? "يرجى إدخال شهادة دراسية كاملة (المستوى، الشهادة، المؤسسة، المعدل)"
+          : "Veuillez saisir au moins un diplôme complet (niveau, intitulé, établissement, note)";
+      case 4:
+        return isRTL
+          ? "يرجى إكمال معلومات الخبرة المهنية"
+          : "Veuillez compléter votre expérience professionnelle";
+      case 6:
+        return isRTL
+          ? "يرجى قبول الشروط والتوقيع على التصريح"
+          : "Veuillez accepter les conditions et signer la déclaration";
+      default:
+        return isRTL
+          ? "يرجى إكمال جميع الحقول المطلوبة"
+          : "Veuillez remplir tous les champs obligatoires";
+    }
   };
 
   const handleBack = () => {
     setError("");
-    setCurrentStep(Math.max(currentStep - 1, 1));
+    setCurrentStep(getPrevStep(currentStep));
   };
+
+  // Jump directly to any already-visited step (sidebar navigation).
+  const handleGoToStep = (step: number) => {
+    setError("");
+    // Never land on the experience step for the operational track.
+    if (isManualTrack && step === EXPERIENCE_STEP) {
+      setCurrentStep(
+        currentStep > EXPERIENCE_STEP ? EXPERIENCE_STEP + 1 : EXPERIENCE_STEP - 1
+      );
+      return;
+    }
+    setCurrentStep(Math.min(Math.max(step, 1), 6));
+  };
+
+  // If the candidate switches to an operational job while sitting on the
+  // experience step, move them off it immediately.
+  useEffect(() => {
+    if (isManualTrack && currentStep === EXPERIENCE_STEP) {
+      setCurrentStep(EXPERIENCE_STEP + 1);
+    }
+  }, [isManualTrack, currentStep]);
 
   const addDiploma = () => {
     const updated = [...diplomas, { studyLevel: "", diploma: "", institution: "", grade: "", graduationYear: new Date().getFullYear() }];
@@ -376,6 +607,11 @@ export default function ApplicationWizard() {
       return;
     }
 
+    if (eligibilityError) {
+      setError(eligibilityError);
+      return;
+    }
+
     setLoading(true);
 
     updateFormData("termsAccepted", termsAccepted);
@@ -390,21 +626,30 @@ export default function ApplicationWizard() {
       personalInfo: {
         lastName: personalData.lastName,
         firstName: personalData.firstName,
-        fullName: `${personalData.firstName} ${personalData.lastName}`,
+        fullName: (personalData.firstName + " " + personalData.lastName).trim(),
         cin: personalData.cin,
         dateOfBirth: personalData.dateOfBirth,
         birthPlace: personalData.birthPlace,
         gender: personalData.gender,
         familyStatus: personalData.familyStatus,
         numberOfChildren: personalData.numberOfChildren,
+        nationality: personalData.nationality,
         phone: formatPhone(personalData.phone),
+        address: personalData.address,
+        postalCode: personalData.postalCode,
         governorate: personalData.governorate,
         delegation: personalData.delegation,
         email: accountData.email,
       },
-      academicInfo: { diplomas },
-      experienceInfo: { hasExperience, experiences },
+      academicInfo: isManualTrack
+        ? { diplomas: [], moyenneBac: "", moyenne1ere: "", moyenne2eme: "", moyenne3eme: "", eduLevel, hasCertification }
+        : { diplomas, moyenneBac, moyenne1ere, moyenne2eme, moyenne3eme, eduLevel, hasCertification },
+      // Operational track carries no prior-experience requirement.
+      experienceInfo: isManualTrack
+        ? { hasExperience: false, experiences: [] }
+        : { hasExperience, experiences },
       jobSelection: { jobId: selectedJob },
+      eduLevel: eduLevel || null,
       documents: { files: uploadedFiles },
       termsAccepted,
       certificationSigned,
@@ -430,6 +675,7 @@ export default function ApplicationWizard() {
         setSuccess(true);
         if (typeof window !== "undefined") {
           localStorage.removeItem("application_current_step");
+          localStorage.removeItem(STEP_STORAGE_KEY);
         }
       } else {
         const data = await res.json();
@@ -448,10 +694,16 @@ export default function ApplicationWizard() {
     <div className="space-y-8">
       {/* Account Section */}
       <div>
-        <h3 className="text-sm font-semibold text-slate-800 mb-4">
-          {isRTL ? "معلومات الحساب" : "Informations du compte"}
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="flex items-center gap-4 pb-6 border-b-2 border-gray-200">
+          <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-full shadow-md">
+            <span className="text-lg font-bold">🔑</span>
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-gray-900">{isRTL ? "معلومات الحساب" : "INFORMATIONS DU COMPTE"}</h2>
+            <p className="text-sm text-gray-500 mt-1">{isRTL ? "أنشئ حسابك للمتابعة" : "Créez votre compte pour continuer"}</p>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
           <div className="space-y-1.5">
             <Label htmlFor="email" className="text-sm">
               {t("email")} <span className="text-red-500">*</span>
@@ -478,27 +730,35 @@ export default function ApplicationWizard() {
 
       {/* Personal Info Section */}
       <div>
-        <h3 className="text-sm font-semibold text-slate-800 mb-4">
-          {isRTL ? "المعلومات الشخصية" : "Informations personnelles"}
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="flex items-center gap-4 pb-6 border-b-2 border-gray-200">
+          <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 text-white rounded-full shadow-md">
+            <span className="text-lg font-bold">👤</span>
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-gray-900">{isRTL ? "المعلومات الشخصية" : "INFORMATIONS PERSONNELLES"}</h2>
+            <p className="text-sm text-gray-500 mt-1">{isRTL ? "يرجى تقديم معلوماتك الدقيقة" : "Veuillez fournir vos informations exactes"}</p>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
           <div className="space-y-1.5">
             <Label htmlFor="lastName" className="text-sm">
-              {isRTL ? "النسب" : "Nom"} <span className="text-red-500">*</span>
+              {isRTL ? "اللقب" : "Nom"} <span className="text-red-500">*</span>
             </Label>
             <Input id="lastName" value={personalData.lastName}
-              onChange={(e) => setPersonalData({ ...personalData, lastName: e.target.value })} required />
+              onChange={(e) => setPersonalData({ ...personalData, lastName: e.target.value, fullName: e.target.value })}
+              placeholder={isRTL ? "مثال: DUPONT" : "Ex: DUPONT"} required />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="firstName" className="text-sm">
               {isRTL ? "الاسم" : "Prénom"} <span className="text-red-500">*</span>
             </Label>
             <Input id="firstName" value={personalData.firstName}
-              onChange={(e) => setPersonalData({ ...personalData, firstName: e.target.value })} required />
+              onChange={(e) => setPersonalData({ ...personalData, firstName: e.target.value })}
+              placeholder={isRTL ? "مثال: محمد" : "Ex: Jean"} required />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="cin" className="text-sm">
-              {t("cin")} <span className="text-red-500">*</span>
+              {isRTL ? "رقم بطاقة التعريف" : "Numéro CIN"} <span className="text-red-500">*</span>
             </Label>
             <Input id="cin" value={personalData.cin}
               onChange={(e) => setPersonalData({ ...personalData, cin: e.target.value })}
@@ -506,7 +766,7 @@ export default function ApplicationWizard() {
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="dateOfBirth" className="text-sm">
-              {t("dateOfBirth")} <span className="text-red-500">*</span>
+              {isRTL ? "تاريخ الولادة" : "Date de naissance"} <span className="text-red-500">*</span>
             </Label>
             <Input id="dateOfBirth" type="date" value={personalData.dateOfBirth}
               onChange={(e) => setPersonalData({ ...personalData, dateOfBirth: e.target.value })} required />
@@ -516,7 +776,8 @@ export default function ApplicationWizard() {
               {isRTL ? "مكان الولادة" : "Lieu de naissance"} <span className="text-red-500">*</span>
             </Label>
             <Input id="birthPlace" value={personalData.birthPlace}
-              onChange={(e) => setPersonalData({ ...personalData, birthPlace: e.target.value })} required />
+              onChange={(e) => setPersonalData({ ...personalData, birthPlace: e.target.value })}
+              placeholder={isRTL ? "مثال: تونس" : "Ex: Tunis"} required />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="gender" className="text-sm">
@@ -527,6 +788,19 @@ export default function ApplicationWizard() {
               className="flex h-10 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
               <option value="MALE">{isRTL ? "ذكر" : "Homme"}</option>
               <option value="FEMALE">{isRTL ? "أنثى" : "Femme"}</option>
+            </select>
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="nationality" className="text-sm">
+              {isRTL ? "الجنسية" : "Nationalité"} <span className="text-red-500">*</span>
+            </Label>
+            <select id="nationality" value={personalData.nationality}
+              onChange={(e) => setPersonalData({ ...personalData, nationality: e.target.value })}
+              className="flex h-10 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="">{isRTL ? "اختر" : "Sélectionner"}</option>
+              {NATIONALITIES.map((n) => (
+                <option key={n.value} value={n.value}>{isRTL ? n.labelAr : n.labelFr}</option>
+              ))}
             </select>
           </div>
           <div className="space-y-1.5">
@@ -551,31 +825,48 @@ export default function ApplicationWizard() {
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="phone" className="text-sm">
-              {t("phone")} <span className="text-red-500">*</span>
+              {isRTL ? "رقم الهاتف" : "Téléphone"} <span className="text-red-500">*</span>
             </Label>
             <Input id="phone" value={personalData.phone}
               onChange={(e) => setPersonalData({ ...personalData, phone: e.target.value })}
-              placeholder="00 000 000" required />
+              placeholder={isRTL ? "مثال: 20123456" : "Ex: 20123456"} required maxLength={8} />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="governorate" className="text-sm">
-              {t("governorate")} <span className="text-red-500">*</span>
+              {isRTL ? "الولاية" : "Gouvernorat"} <span className="text-red-500">*</span>
             </Label>
             <select id="governorate" value={personalData.governorate}
               onChange={(e) => setPersonalData({ ...personalData, governorate: e.target.value })}
               className="flex h-10 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
               <option value="">{isRTL ? "اختر الولاية" : "Sélectionner"}</option>
               {GOVERNORATES.map((g) => (
-                <option key={g} value={g}>{g}</option>
+                <option key={g.value} value={g.value}>{isRTL ? g.labelAr : g.value}</option>
               ))}
             </select>
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="delegation" className="text-sm">
-              {t("delegation")} <span className="text-red-500">*</span>
+              {isRTL ? "المعتمدية" : "Délégation"} <span className="text-red-500">*</span>
             </Label>
             <Input id="delegation" value={personalData.delegation}
               onChange={(e) => setPersonalData({ ...personalData, delegation: e.target.value })} required />
+          </div>
+          {/* Address full width */}
+          <div className="md:col-span-2 space-y-1.5">
+            <Label htmlFor="address" className="text-sm">
+              {isRTL ? "العنوان الكامل" : "Adresse complète"} <span className="text-red-500">*</span>
+            </Label>
+            <Input id="address" value={personalData.address}
+              onChange={(e) => setPersonalData({ ...personalData, address: e.target.value })}
+              placeholder={isRTL ? "مثال: 123 نهج السلام، شقة 4" : "Ex: 123 Rue de la Paix, Appartement 4"} required />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="postalCode" className="text-sm">
+              {isRTL ? "الرمز البريدي" : "Code postal"}
+            </Label>
+            <Input id="postalCode" value={personalData.postalCode}
+              onChange={(e) => setPersonalData({ ...personalData, postalCode: e.target.value })}
+              placeholder={isRTL ? "مثال: 1002" : "Ex: 1002"} />
           </div>
         </div>
       </div>
@@ -615,68 +906,190 @@ export default function ApplicationWizard() {
     </div>
   );
 
-  const renderStep2 = () => (
+  const renderAcademic = () => (
     <div className="space-y-6">
-      {diplomas.map((diploma, index) => (
-        <Card key={index}>
-          <CardContent className="p-5 space-y-4">
-            <div className="flex justify-between items-center">
-              <h4 className="text-sm font-semibold text-slate-800">
-                {isRTL ? `الشهادة ${index + 1}` : `Diplôme ${index + 1}`}
-              </h4>
-              {diplomas.length > 1 && (
-                <Button type="button" variant="ghost" size="sm" onClick={() => removeDiploma(index)}
-                  className="text-red-500 hover:text-red-700">
-                  {isRTL ? "حذف" : "Supprimer"}
-                </Button>
-              )}
+      {eligibilityError && (
+        <div
+          role="alert"
+          className="p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3"
+        >
+          <svg className="w-5 h-5 mt-0.5 shrink-0 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <p className="text-sm text-red-800">{eligibilityError}</p>
+        </div>
+      )}
+      <div className="flex items-center gap-4 pb-6 border-b-2 border-gray-200">
+        <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-full shadow-md">
+          <FileText size={20} />
+        </div>
+        <div>
+          <h2 className="text-xl font-bold text-gray-900">
+            {selectedProfile === "MANUAL"
+              ? (isRTL ? "المستوى الدراسي" : "NIVEAU D'ÉTUDES")
+              : (isRTL ? "المسار الأكاديمي" : "PARCOURS ACADÉMIQUE")}
+          </h2>
+          <p className="text-sm text-gray-500 mt-1">
+            {selectedProfile === "MANUAL"
+              ? (isRTL
+                  ? "هذه الوظيفة لا تتطلب شهادة دراسية. حدّد مستواك الدراسي فقط."
+                  : "Ce poste n'exige aucun diplôme. Indiquez simplement votre niveau d'études.")
+              : (isRTL ? "يرجى إدراج شهاداتك الدراسية" : "Veuillez ajouter vos diplômes")}
+          </p>
+        </div>
+      </div>
+
+      {/* Niveau d'études — the only academic input required for the operational
+          track (maintenance, polyvalents, cleaning staff). For ACADEMIC posts it
+          stays visible but optional; those are validated on the diplomas below. */}
+      <Card className={selectedProfile === "MANUAL" ? "border-amber-400 bg-amber-50/60" : "border-amber-300 bg-amber-50/50"}>
+        <CardContent className="p-5 space-y-4">
+          <div>
+            <h4 className="text-sm font-semibold text-slate-800">
+              {isRTL ? "المستوى الدراسي" : "Niveau d'études"}
+            </h4>
+            <p className="text-xs text-slate-600 mt-1">
+              {isRTL
+                ? "مطلوب للوظائف التي لا تتطلب شهادة دراسية. يمكنك تركه فارغًا إذا كنت تترشح إلى وظيفة تتطلب شهادة."
+                : "Requis pour les postes sans diplôme (maintenance, polyvalents, agents d'entretien). Vous pouvez laisser vide si vous postulez à un poste exigeant un diplôme."}
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <Label className="text-sm">{isRTL ? "المستوى" : "Niveau"}</Label>
+              <select
+                value={eduLevel}
+                onChange={(e) => setEduLevel(e.target.value)}
+                className="flex h-10 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">{isRTL ? "غير محدد" : "Non précisé"}</option>
+                {EDU_LEVELS.map((level) => (
+                  <option key={level.value} value={level.value}>
+                    {isRTL ? level.labelAr : level.labelFr}
+                  </option>
+                ))}
+              </select>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label className="text-sm">{t("studyLevel")} <span className="text-red-500">*</span></Label>
-                <select value={diploma.studyLevel}
-                  onChange={(e) => updateDiploma(index, "studyLevel", e.target.value)}
-                  className="flex h-10 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                  <option value="">{isRTL ? "اختر المستوى" : "Sélectionner"}</option>
-                  {STUDY_LEVELS.map((level) => (
-                    <option key={level.value} value={level.value}>{level.label}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-sm">{t("diploma")} <span className="text-red-500">*</span></Label>
-                <Input value={diploma.diploma}
-                  onChange={(e) => updateDiploma(index, "diploma", e.target.value)}
-                  placeholder={isRTL ? "مثال: إجازة في العلوم" : "Ex: Licence en Sciences"} required />
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-sm">{t("institution")} <span className="text-red-500">*</span></Label>
-                <Input value={diploma.institution}
-                  onChange={(e) => updateDiploma(index, "institution", e.target.value)} required />
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-sm">{t("grade")} <span className="text-red-500">*</span></Label>
-                <Input value={diploma.grade}
-                  onChange={(e) => updateDiploma(index, "grade", e.target.value)}
-                  placeholder={isRTL ? "مثال: جيد جداً" : "Ex: Très bien"} required />
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-sm">{t("graduationYear")} <span className="text-red-500">*</span></Label>
-                <Input type="number" value={diploma.graduationYear}
-                  onChange={(e) => updateDiploma(index, "graduationYear", parseInt(e.target.value))}
-                  min={1960} max={new Date().getFullYear()} required />
-              </div>
+            <div className="flex items-end">
+              <label className="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={hasCertification}
+                  onChange={(e) => setHasCertification(e.target.checked)}
+                  className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                />
+                {isRTL
+                  ? "لدي شهادة تكوين مهني"
+                  : "Je détiens une attestation de formation professionnelle"}
+              </label>
             </div>
-          </CardContent>
-        </Card>
-      ))}
-      <Button type="button" variant="outline" onClick={addDiploma} className="w-full border-dashed">
-        + {isRTL ? "إضافة شهادة أخرى" : "Ajouter un autre diplôme"}
-      </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Diplômes — ACADEMIC track only. The operational track has no academic
+          background requirement, so these inputs are not rendered at all. */}
+      {selectedProfile !== "MANUAL" && (
+      <div className="space-y-4">
+        {diplomas.map((diploma, index) => (
+          <Card key={index}>
+            <CardContent className="p-5 space-y-4">
+              <div className="flex justify-between items-center">
+                <h4 className="text-sm font-semibold text-slate-800">
+                  {isRTL ? `الشهادة ${index + 1}` : `Diplôme ${index + 1}`}
+                </h4>
+                {diplomas.length > 1 && (
+                  <Button type="button" variant="ghost" size="sm" onClick={() => removeDiploma(index)}
+                    className="text-red-500 hover:text-red-700">
+                    {isRTL ? "حذف" : "Supprimer"}
+                  </Button>
+                )}
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label className="text-sm">{t("studyLevel")} <span className="text-red-500">*</span></Label>
+                  <select value={diploma.studyLevel}
+                    onChange={(e) => updateDiploma(index, "studyLevel", e.target.value)}
+                    className="flex h-10 w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">{isRTL ? "اختر المستوى" : "Sélectionner"}</option>
+                    {STUDY_LEVELS.map((level) => (
+                      <option key={level.value} value={level.value}>{isRTL ? level.labelAr : level.label}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-sm">{t("diploma")} <span className="text-red-500">*</span></Label>
+                  <Input value={diploma.diploma}
+                    onChange={(e) => updateDiploma(index, "diploma", e.target.value)}
+                    placeholder={isRTL ? "مثال: إجازة في العلوم" : "Ex: Licence en Sciences"} required />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-sm">{t("institution")} <span className="text-red-500">*</span></Label>
+                  <Input value={diploma.institution}
+                    onChange={(e) => updateDiploma(index, "institution", e.target.value)} required />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-sm">{t("grade")} <span className="text-red-500">*</span></Label>
+                  <Input value={diploma.grade}
+                    onChange={(e) => updateDiploma(index, "grade", e.target.value)}
+                    placeholder={isRTL ? "مثال: جيد جداً" : "Ex: Très bien"} required />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-sm">{t("graduationYear")} <span className="text-red-500">*</span></Label>
+                  <Input type="number" value={diploma.graduationYear}
+                    onChange={(e) => updateDiploma(index, "graduationYear", parseInt(e.target.value))}
+                    min={1960} max={new Date().getFullYear()} required />
+                </div>
+              </div>
+              
+            </CardContent>
+          </Card>
+          
+        ))}
+      </div>
+      )}
+
+      {/* Moyennes — ACADEMIC track only. Grades are meaningless for the
+          operational track, which is scored on declared level instead. */}
+      {selectedProfile !== "MANUAL" && (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <Label className="text-sm">{isRTL ? "معدل الباكالوريا" : "Moyenne de bac"}</Label>
+              <Input value={moyenneBac}
+                onChange={(e) => setMoyenneBac(e.target.value)}
+                placeholder={isRTL ? "مثال: 14.5" : "Ex: 14.5"} />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-sm">{isRTL ? "معدل السنة الأولى" : "Moyenne 1ère année"}</Label>
+              <Input value={moyenne1ere}
+                onChange={(e) => setMoyenne1ere(e.target.value)}
+                placeholder={isRTL ? "مثال: 13.0" : "Ex: 13.0"} />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-sm">{isRTL ? "معدل السنة الثانية" : "Moyenne 2ème année"}</Label>
+              <Input value={moyenne2eme}
+                onChange={(e) => setMoyenne2eme(e.target.value)}
+                placeholder={isRTL ? "مثال: 12.5" : "Ex: 12.5"} />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-sm">{isRTL ? "معدل السنة الثالثة" : "Moyenne 3ème année"}</Label>
+              <Input value={moyenne3eme}
+                onChange={(e) => setMoyenne3eme(e.target.value)}
+                placeholder={isRTL ? "مثال: 15.0" : "Ex: 15.0"} />
+            </div>
+          </div>
+
+          <Button type="button" variant="outline" onClick={addDiploma} className="w-full border-dashed">
+            + {isRTL ? "إضافة شهادة أخرى" : "Ajouter un autre diplôme"}
+          </Button>
+        </>
+      )}
     </div>
   );
 
-  const renderStep3 = () => (
+  const renderExperience = () => (
     <div className="space-y-6">
       <div className="p-4 bg-slate-50 rounded-lg">
         <label className="flex items-center gap-3 cursor-pointer">
@@ -733,6 +1146,7 @@ export default function ApplicationWizard() {
               </CardContent>
             </Card>
           ))}
+          
           <Button type="button" variant="outline" onClick={addExperience} className="w-full border-dashed">
             + {isRTL ? "إضافة خبرة أخرى" : "Ajouter une autre expérience"}
           </Button>
@@ -741,26 +1155,127 @@ export default function ApplicationWizard() {
     </div>
   );
 
-  const renderStep4 = () => (
-    <div className="space-y-6">
-      <FileDropzone
-        value={uploadedFiles}
-        onChange={handleFilesChange}
-        locale={isRTL ? "ar" : "fr"}
-        docType="application_document"
-      />
+  // Operational staff (maintenance, general-purpose, cleaning) are only asked
+  // for identity and a photo. Academic attestations, a CV, a motivation letter
+  // and a criminal record extract are not relevant to that category.
+  const MANUAL_DOC_KEYS = ["cin", "photo"];
+  const documentTypes = isManualTrack
+    ? DOCUMENT_TYPES.filter((d) => MANUAL_DOC_KEYS.includes(d.key))
+    : DOCUMENT_TYPES;
 
-      {uploadedFiles.length === 0 && (
-        <div className="p-3 text-xs text-slate-500 bg-slate-50 border border-slate-200 rounded-lg">
-          {isRTL
-            ? "أرفق المستندات المطلوبة (CIN، الدبلوم، السيرة الذاتية، إلخ)."
-            : "Joignez les documents requis (CIN, diplôme, CV, etc.)."}
+  const renderDocuments = () => (
+    <div className="space-y-6">
+      <div className="flex items-center gap-4 pb-6 border-b-2 border-gray-200">
+        <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-amber-500 to-amber-600 text-white rounded-full shadow-md">
+          <FileText size={20} />
         </div>
-      )}
+        <div className="flex-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            <h2 className="text-2xl font-bold text-gray-900">
+              {isRTL ? "الوثائق" : "Pièces justificatives"}
+            </h2>
+            <span className="text-[11px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
+              {isRTL ? "اختياري" : "Optionnel"}
+            </span>
+          </div>
+          <p className="text-sm text-gray-500 mt-1">
+            {isRTL
+              ? "يمكنك تأكيد الوثائق المتوفرة لديك ورفعها الآن، أو تخطي هذه الخطوة وإضافتها لاحقًا."
+              : "Vous pouvez indiquer vos documents et les téléverser maintenant, ou simplement passer à l'étape suivante et les fournir plus tard."}
+          </p>
+        </div>
+      </div>
+
+      <div className="p-5 bg-slate-50 rounded-xl border border-slate-200">
+        <div className="flex gap-3">
+          <HelpCircle size={20} className="text-slate-500 flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-slate-700">
+            {isRTL
+              ? "هذه الخطوة اختيارية بالكامل. إذا لم تكن الوثائق جاهزة الآن، يمكنك إكمال التسجيل وتقديمها لاحقًا عند الطلب."
+              : "Cette étape est entièrement optionnelle. Si vos documents ne sont pas prêts maintenant, vous pouvez finaliser votre inscription et les fournir ultérieurement sur demande."}
+          </p>
+        </div>
+      </div>
+
+      <div>
+        <h3 className="text-base font-semibold text-gray-900 mb-3">
+          {isRTL ? "حدد الوثائق المتوفرة لديك" : "Cochez les documents dont vous disposez"}
+        </h3>
+        {isManualTrack && (
+          <p className="text-sm text-slate-600 mb-3">
+            {isRTL
+              ? "فئة الأعوان المتعاملين: بطاقة التعريف الوطنية وصورة شمسية فقط."
+              : "Catégorie agents d'exécution : CIN et photo d'identité uniquement."}
+          </p>
+        )}
+        <div className="space-y-2">
+          {documentTypes.map((doc) => {
+            const checked = confirmedDocs.includes(doc.key);
+            return (
+              <label
+                key={doc.key}
+                className={`flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-all ${checked ? "bg-blue-50 border-blue-300" : "bg-white border-gray-200 hover:bg-slate-50"}`}
+              >
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  onChange={() => {
+                    setConfirmedDocs(
+                      checked ? confirmedDocs.filter((k) => k !== doc.key) : [...confirmedDocs, doc.key]
+                    );
+                  }}
+                  className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                />
+                <span className={`text-sm font-medium flex-1 ${checked ? "text-blue-800" : "text-gray-700"}`}>
+                  {isRTL ? doc.labelAr : doc.labelFr}
+                </span>
+                {checked && (
+                  <span className="text-blue-600 text-xs font-semibold">
+                    ✓ {isRTL ? "متوفر" : "Disponible"}
+                  </span>
+                )}
+              </label>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className={`p-4 rounded-xl border ${docsAcknowledged ? "bg-blue-50 border-blue-300" : "bg-white border-gray-200"}`}>
+        <label className="flex items-start gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={docsAcknowledged}
+            onChange={() => setDocsAcknowledged(!docsAcknowledged)}
+            className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 mt-0.5"
+          />
+          <span className="text-sm text-gray-600">
+            {isRTL
+              ? "أقر بأنني سأقدم الوثائق المحددة عند الطلب. (اختياري)"
+              : "Je m'engage à fournir les documents cochés sur demande. (facultatif)"}
+          </span>
+        </label>
+      </div>
+
+      <div>
+        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+          {isRTL ? "رفع الوثائق (اختياري)" : "Téléversement des documents (optionnel)"}
+        </h3>
+        <p className="text-sm text-gray-500 mb-3">
+          {isRTL
+            ? "يمكنك رفع الوثائق الآن أو لاحقًا عند تقديم طلبك."
+            : "Vous pouvez téléverser vos documents maintenant ou plus tard lors du dépôt de candidature."}
+        </p>
+        <FileDropzone
+          value={uploadedFiles}
+          onChange={handleFilesChange}
+          locale={isRTL ? "ar" : "fr"}
+          docType="application_document"
+        />
+      </div>
     </div>
   );
 
-  const renderStep5 = () => (
+  const renderJobSelection = () => (
     <div className="space-y-6">
       <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800 flex items-start gap-2">
         <svg className="w-5 h-5 mt-0.5 shrink-0 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -792,6 +1307,22 @@ export default function ApplicationWizard() {
                   <div>
                     <h3 className="font-semibold text-sm">{isRTL ? job.titleAr : job.titleFr}</h3>
                     <p className="text-xs text-slate-500">{job.code}</p>
+                    <span className={`inline-block mt-2 px-2 py-0.5 rounded-full text-[11px] font-medium ${
+                      job.profile === "MANUAL"
+                        ? "bg-amber-100 text-amber-800"
+                        : "bg-blue-100 text-blue-800"
+                    }`}>
+                      {(() => {
+                        const base = PROFILE_LABEL[job.profile || "ACADEMIC"];
+                        const lbl = isRTL ? base.ar : base.fr;
+                        if (job.profile === "MANUAL") {
+                          const req = EDU_LEVEL_LABEL[job.minEduLevel || "SECONDARY"];
+                          const reqLbl = isRTL ? req.ar : req.fr;
+                          return `${lbl} · ${reqLbl}+`;
+                        }
+                        return lbl;
+                      })()}
+                    </span>
                   </div>
                   {selectedJob === job.id && (
                     <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
@@ -835,11 +1366,11 @@ export default function ApplicationWizard() {
         <CardContent className="p-5 space-y-3">
           <h4 className="text-sm font-semibold">{isRTL ? "ملخص الطلب" : "Résumé de la candidature"}</h4>
           <div className="grid grid-cols-2 gap-3 text-sm">
-            <div><span className="text-slate-500">{isRTL ? "الاسم" : "Nom"}:</span> {personalData.lastName}</div>
-            <div><span className="text-slate-500">{isRTL ? "الاسم الأول" : "Prénom"}:</span> {personalData.firstName}</div>
-            <div><span className="text-slate-500">{t("cin")}:</span> {personalData.cin}</div>
-            <div><span className="text-slate-500">{t("phone")}:</span> {personalData.phone}</div>
-            <div><span className="text-slate-500">{t("governorate")}:</span> {personalData.governorate}</div>
+            <div><span className="text-slate-500">{isRTL ? "الاسم واللقب" : "Nom complet"}:</span> {(personalData.firstName + " " + personalData.lastName).trim()}</div>
+            <div><span className="text-slate-500">{isRTL ? "الاسم" : "Prénom"}:</span> {personalData.firstName}</div>
+            <div><span className="text-slate-500">{isRTL ? "رقم بطاقة التعريف" : "CIN"}:</span> {personalData.cin}</div>
+            <div><span className="text-slate-500">{isRTL ? "رقم الهاتف" : "Téléphone"}:</span> {personalData.phone}</div>
+            <div><span className="text-slate-500">{isRTL ? "الولاية" : "Gouvernorat"}:</span> {personalData.governorate}</div>
           </div>
           {diplomas.filter(d => d.diploma).length > 0 && (
             <div className="pt-2 border-t border-slate-100">
@@ -923,11 +1454,11 @@ export default function ApplicationWizard() {
       <div className="flex flex-col sm:flex-row gap-3 mt-6">
         <Button onClick={() => {
           const link = document.createElement("a");
-          link.href = `/api/applications/${successAppId}/convocation`;
+          link.href = `/api/candidate/applications/${successAppId}/pdf`;
           link.target = "_blank";
           link.click();
         }}>
-          {isRTL ? "📄 تحميل استدعاء الترشح" : "📄 Télécharger la convocation"}
+          {isRTL ? "📄 تحميل مطلب الترشح" : "📄 Télécharger la demande"}
         </Button>
         <Button variant="outline" onClick={() => router.push(`/${locale}/dashboard`)}>
           {isRTL ? "الذهاب إلى لوحة التحكم" : "Accéder à mon espace"}
@@ -937,15 +1468,30 @@ export default function ApplicationWizard() {
   );
 
   // ---------- Sidebar Step Indicator ----------
+  // Operational track: the experience step is not part of the form, so it is
+  // hidden from the stepper rather than shown as a dead end.
+  const visibleSteps = STEPS.filter((s) => !(isManualTrack && s.num === EXPERIENCE_STEP));
+
   const renderSidebar = () => (
     <div className="w-full lg:w-72 shrink-0">
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 space-y-6">
         <div className="space-y-4">
-          {STEPS.map((step, idx) => {
+          {visibleSteps.map((step, idx) => {
             const isActive = step.num === currentStep;
             const isCompleted = step.num < currentStep;
+            // Completed steps stay clickable so a candidate who picked the
+            // wrong track or job can go back and correct it without having to
+            // click "Précédent" repeatedly.
             return (
-              <div key={step.num} className="flex items-start gap-3">
+              <button
+                key={step.num}
+                type="button"
+                onClick={() => isCompleted && handleGoToStep(step.num)}
+                disabled={!isCompleted}
+                className={`flex items-start gap-3 w-full text-start rounded-lg transition-colors ${
+                  isCompleted ? "hover:bg-slate-50 cursor-pointer" : "cursor-default"
+                }`}
+              >
                 <div className="flex flex-col items-center">
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-200 ${
                     isCompleted
@@ -962,7 +1508,7 @@ export default function ApplicationWizard() {
                       step.num
                     )}
                   </div>
-                  {idx < STEPS.length - 1 && (
+                  {idx < visibleSteps.length - 1 && (
                     <div className={`w-0.5 h-8 mt-1 ${isCompleted ? "bg-green-400" : "bg-slate-200"}`} />
                   )}
                 </div>
@@ -973,7 +1519,7 @@ export default function ApplicationWizard() {
                     {isRTL ? step.labelAr : step.labelFr}
                   </p>
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>
@@ -988,7 +1534,7 @@ export default function ApplicationWizard() {
                 ? "إذا واجهت أي مشكلة أثناء التقديم، يمكنك التواصل مع فريق الدعم."
                 : "Si vous rencontrez un problème, contactez notre équipe de support."}
             </p>
-            <Button variant="outline" size="sm" className="w-full text-xs" onClick={() => window.open("mailto:support@promosport.tn")}>
+            <Button variant="outline" size="sm" className="w-full text-xs" onClick={() => window.location.href = `/${locale}/guide#apply`}>
               <svg className="w-3.5 h-3.5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
               </svg>
@@ -1048,10 +1594,10 @@ export default function ApplicationWizard() {
           <div className="flex-1 min-w-0">
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
               {currentStep === 1 && renderStep1()}
-              {currentStep === 2 && renderStep2()}
-              {currentStep === 3 && renderStep3()}
-              {currentStep === 4 && renderStep4()}
-              {currentStep === 5 && renderStep5()}
+              {currentStep === 2 && renderJobSelection()}
+              {currentStep === 3 && renderAcademic()}
+              {currentStep === 4 && renderExperience()}
+              {currentStep === 5 && renderDocuments()}
               {currentStep === 6 && renderStep6()}
             </div>
 

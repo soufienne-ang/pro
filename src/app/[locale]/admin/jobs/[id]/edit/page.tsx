@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
+import { JobFileUpload } from "@/components/job-file-upload";
 
 export default function EditJobPage() {
   const router = useRouter();
@@ -9,6 +10,8 @@ export default function EditJobPage() {
   const [locale, setLocale] = useState("fr");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploadingPdf, setUploadingPdf] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [error, setError] = useState("");
   const [form, setForm] = useState({
     code: "",
@@ -18,6 +21,8 @@ export default function EditJobPage() {
     descriptionAr: "",
     location: "",
     jobType: "",
+    profile: "ACADEMIC",
+    minEduLevel: "SECONDARY",
     openings: 1,
     deadline: "",
     requiredDocs: "",
@@ -52,6 +57,8 @@ export default function EditJobPage() {
           descriptionAr: data.descriptionAr || "",
           location: data.location || "",
           jobType: data.jobType || "",
+          profile: data.profile || "ACADEMIC",
+          minEduLevel: data.minEduLevel || "SECONDARY",
           openings: data.openings || 1,
           deadline: data.deadline ? data.deadline.split("T")[0] : "",
           requiredDocs: data.requiredDocs || "",
@@ -63,7 +70,7 @@ export default function EditJobPage() {
         setLoading(false);
       })
       .catch(() => {
-        setError(isRTL ? "فشل في تحميل بيانات الوظيفة" : "Échec du chargement des données");
+        setError(isRTL ? "فشل في تحميل بيانات المناظرة" : "Échec du chargement des données");
         setLoading(false);
       });
   }, [jobId, isRTL]);
@@ -101,22 +108,54 @@ export default function EditJobPage() {
 
   return (
     <div className="max-w-3xl">
-      <h1 className="text-2xl font-bold mb-6">{isRTL ? "تعديل الوظيفة" : "Modifier l'offre d'emploi"}</h1>
+      <h1 className="text-2xl font-bold mb-6">{isRTL ? "تعديل المناظرة" : "Modifier l'offre d'emploi"}</h1>
 
       {error && <div className="mb-4 p-3 text-sm text-destructive bg-destructive/10 rounded-lg">{error}</div>}
 
       <form onSubmit={handleSubmit} className="bg-white rounded-xl border p-6 shadow-sm space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium">{isRTL ? "رمز الوظيفة" : "Code"} *</label>
+            <label className="text-sm font-medium">{isRTL ? "رمز المناظرة" : "Code"} *</label>
             <input type="text" value={form.code} onChange={e => setForm({ ...form, code: e.target.value })}
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" required />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium">{isRTL ? "نوع الوظيفة" : "Type"} *</label>
+            <label className="text-sm font-medium">{isRTL ? "نوع المناظرة" : "Type"} *</label>
             <input type="text" value={form.jobType} onChange={e => setForm({ ...form, jobType: e.target.value })}
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" required />
           </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium">{isRTL ? "فئة المترشحين" : "Candidate track"} *</label>
+            <select
+              value={form.profile}
+              onChange={e => setForm({ ...form, profile: e.target.value })}
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+            >
+              <option value="ACADEMIC">{isRTL ? "فئة أولى — يتطلب شهادة دراسية" : "Academic — diploma required"}</option>
+              <option value="MANUAL">{isRTL ? "فئة ثانية — بدون شهادة دراسية" : "Manual — no diploma required"}</option>
+            </select>
+            <p className="text-xs text-muted-foreground">
+              {isRTL
+                ? "الفئة الأولى: مهندسون، إداريون، تقنيون. الفئة الثانية: صيانة، متعدد المهارات، porterie."
+                : "Academic: engineers, administrators, technicians. Manual: maintenance, multi-skilled workers, cleaners."}
+            </p>
+          </div>
+          {form.profile === "MANUAL" && (
+            <div className="space-y-2">
+              <label className="text-sm font-medium">{isRTL ? "المستوى الدراسي المطلوب" : "Minimum education level"} *</label>
+              <select
+                value={form.minEduLevel}
+                onChange={e => setForm({ ...form, minEduLevel: e.target.value })}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              >
+                <option value="NONE">{isRTL ? "بدون شهادة" : "No diploma"}</option>
+                <option value="PRIMARY">{isRTL ? "ابتدائي" : "Primary"}</option>
+                <option value="MIDDLE">{isRTL ? "إعدادي" : "Middle school"}</option>
+                <option value="SECONDARY">{isRTL ? "ثانوي" : "Secondary"}</option>
+                <option value="VOCATIONAL">{isRTL ? "تكوين مهني" : "Vocational training"}</option>
+              </select>
+            </div>
+          )}
           <div className="space-y-2">
             <label className="text-sm font-medium">{isRTL ? "الحالة" : "Statut"}</label>
             <select value={form.status} onChange={e => setForm({ ...form, status: e.target.value })}
@@ -152,14 +191,30 @@ export default function EditJobPage() {
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" required />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium">{isRTL ? "رابط PDF" : "URL PDF"}</label>
-            <input type="url" value={form.pdfUrl} onChange={e => setForm({ ...form, pdfUrl: e.target.value })}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
+            <JobFileUpload
+              type="pdf"
+              accept=".pdf,application/pdf"
+              label={isRTL ? "ملف PDF بلاغ المناظرة" : "Fichier PDF"}
+              hint={isRTL ? "PDF فقط" : "PDF uniquement"}
+              value={form.pdfUrl}
+              onChange={(url) => setForm({ ...form, pdfUrl: url })}
+              uploading={uploadingPdf}
+              onUploadingChange={setUploadingPdf}
+              isRTL={isRTL}
+            />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium">{isRTL ? "رابط الصورة" : "URL Image"}</label>
-            <input type="url" value={form.imageUrl} onChange={e => setForm({ ...form, imageUrl: e.target.value })}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm" />
+            <JobFileUpload
+              type="image"
+              accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+              label={isRTL ? "صورة اعلان المناظرة" : "Image"}
+              hint={isRTL ? "JPG, PNG" : "JPG, PNG"}
+              value={form.imageUrl}
+              onChange={(url) => setForm({ ...form, imageUrl: url })}
+              uploading={uploadingImage}
+              onUploadingChange={setUploadingImage}
+              isRTL={isRTL}
+            />
           </div>
         </div>
 

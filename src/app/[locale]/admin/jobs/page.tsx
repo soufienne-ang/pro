@@ -65,7 +65,7 @@ export default function AdminJobsPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">{isRTL ? "المنشورات" : "Offres d'emploi"}</h1>
+        <h1 className="text-2xl font-bold">{isRTL ? "المناظرات" : "Offres d'emploi"}</h1>
         <Link href={`/${locale}/admin/jobs/new`}>
           <span className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium cursor-pointer">
             + {isRTL ? "إضافة" : "Ajouter"}
@@ -91,10 +91,10 @@ export default function AdminJobsPage() {
         </div>
       ) : jobs.length === 0 ? (
         <div className="bg-white rounded-xl border p-12 text-center shadow-sm">
-          <p className="text-muted-foreground mb-4">{isRTL ? "لا توجد وظائف" : "Aucune offre"}</p>
+          <p className="text-muted-foreground mb-4">{isRTL ? "لا توجد مناظرات" : "Aucune offre"}</p>
           <Link href={`/${locale}/admin/jobs/new`}>
             <span className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium cursor-pointer">
-              {isRTL ? "إضافة وظيفة" : "Ajouter une offre"}
+              {isRTL ? "إضافة مناظرة" : "Ajouter une offre"}
             </span>
           </Link>
         </div>
@@ -103,12 +103,12 @@ export default function AdminJobsPage() {
           <table className="w-full">
             <thead>
               <tr className="border-b bg-slate-50 text-sm">
-                <th className="text-left p-3 font-medium">{isRTL ? "الرمز" : "Code"}</th>
-                <th className="text-left p-3 font-medium">{isRTL ? "العنوان" : "Titre"}</th>
-                <th className="text-left p-3 font-medium hidden md:table-cell">{isRTL ? "الموقع" : "Lieu"}</th>
-                <th className="text-center p-3 font-medium hidden md:table-cell">{isRTL ? "المناصب" : "Postes"}</th>
+                <th className="text-right p-3 font-medium">{isRTL ? "الرمز" : "Code"}</th>
+                <th className="text-right p-3 font-medium">{isRTL ? "العنوان" : "Titre"}</th>
+                <th className="text-right p-3 font-medium hidden md:table-cell">{isRTL ? "الموقع" : "Lieu"}</th>
+                <th className="text-center p-3 font-medium hidden md:table-cell">{isRTL ? "الخطط" : "Postes"}</th>
                 <th className="text-center p-3 font-medium">{isRTL ? "الحالة" : "Statut"}</th>
-                <th className="text-right p-3 font-medium">{isRTL ? "إجراءات" : "Actions"}</th>
+                <th className="text-center p-3 font-medium">{isRTL ? "إجراءات" : "Actions"}</th>
               </tr>
             </thead>
             <tbody>
@@ -133,6 +133,11 @@ export default function AdminJobsPage() {
                     </td>
                     <td className="p-3 text-right">
                       <div className="flex items-center justify-end gap-2">
+                        <Link href={`/${locale}/admin/jobs/${job.id}`}>
+                          <span className="text-xs text-primary hover:underline cursor-pointer">
+                            {isRTL ? "عرض" : "Voir"}
+                          </span>
+                        </Link>
                         <Link href={`/${locale}/admin/jobs/${job.id}/edit`}>
                           <span className="text-xs text-primary hover:underline cursor-pointer">
                             {isRTL ? "تعديل" : "Modifier"}

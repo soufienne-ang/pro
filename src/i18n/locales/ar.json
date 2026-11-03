@@ -27,7 +27,7 @@
   },
   "nav": {
     "home": "الرئيسية",
-    "about": "عن الموقع",
+    "about": "قائمة المناظرات",
     "contact": "اتصل بنا",
     "login": "تسجيل الدخول",
     "register": "التسجيل",
@@ -35,7 +35,8 @@
     "dashboard": "لوحة التحكم",
     "myApplications": "طلباتي",
     "profile": "الملف الشخصي",
-    "settings": "الإعدادات"
+    "settings": "الإعدادات",
+    "guide": "الدليل"
   },
   "auth": {
     "login": "تسجيل الدخول",
@@ -54,13 +55,14 @@
     "invalidCredentials": "بريد إلكتروني أو كلمة مرور غير صحيحة",
     "emailVerified": "تم التحقق من البريد الإلكتروني بنجاح",
     "registrationSuccess": "تم التسجيل بنجاح!",
-    "wrongCode": "رمز التحقق غير صحيح"
+    "wrongCode": "رمز التحقق غير صحيح",
+    "confirm": "تأكيد"
   },
   "candidate": {
     "personalInfo": "المعلومات الشخصية",
     "academicInfo": "المعلومات الأكاديمية",
     "professionalExperience": "الخبرة المهنية",
-    "jobSelection": "اختيار الوظيفة",
+    "jobSelection": "اختيار المناظرة",
     "documentUpload": "رفع الوثائق",
     "reviewValidate": "المراجعة والتدقيق",
     "confirmation": "التأكيد",
@@ -84,8 +86,8 @@
     "grade": "الدرجة",
     "institution": "المؤسسة",
     "graduationYear": "سنة التخرج",
-    "selectJob": "اختر وظيفة",
-    "jobDescription": "وصف الوظيفة",
+    "selectJob": "اختر مناظرة",
+    "jobDescription": "وصف المناظرة",
     "requiredDocuments": "الوثائق المطلوبة",
     "uploadSuccess": "تم رفع الوثيقة بنجاح",
     "uploadError": "خطأ في رفع الوثيقة",
@@ -126,22 +128,22 @@
   },
   "admin": {
     "dashboard": "لوحة تحكم المسؤول",
-    "candidates": "المرشحين",
-    "applications": "الطلبات",
-    "jobs": "المنشورات",
+    "candidates": "المترشحين",
+    "applications": "المسجليين",
+    "jobs": "المناظرات",
     "scoring": "الترتيب",
     "results": "النتائج",
     "notifications": "الإشعارات",
     "analytics": "التحليلات",
     "settings": "الإعدادات",
-    "addJob": "إضافة وظيفة جديدة",
-    "editJob": "تعديل الوظيفة",
+    "addJob": "إضافة مناظرة جديدة",
+    "editJob": "تعديل المناظرة",
     "jobTitle": "المسمى الوظيفي",
     "jobCode": "رمز الوظيفة",
     "description": "الوصف",
     "location": "الموقع",
-    "jobType": "نوع الوظيفة",
-    "openings": "عدد المناصب",
+    "jobType": "نوع المناظرة",
+    "openings": "عدد الخطط",
     "deadline": "آخر أجل للتقديم",
     "status": "الحالة",
     "draft": "مسودة",
@@ -151,11 +153,11 @@
     "filterByPosition": "تصفية حسب الخطة",
     "filterByGovernorate": "تصفية حسب الولاية",
     "filterByDiploma": "تصفية حسب المستوى الدراسي",
-    "scoreCandidate": "ترتيب المرشح",
+    "scoreCandidate": "ترتيب المترشح",
     "importScores": "استيراد النتائج",
     "exportResults": "تصدير النتائج",
     "rankedList": "القائمة المرتبة",
-    "totalCandidates": "إجمالي المرشحين",
+    "totalCandidates": "إجمالي المترشحيين",
     "applicationsByStatus": "الطلبات حسب الحالة",
     "applicationsByPosition": "الطلبات حسب الخطة"
   },
@@ -170,6 +172,65 @@
     "invalidDate": "تاريخ غير صحيح",
     "fileTooLarge": "حجم الملف يتجاوز {max} ميجابايت",
     "invalidFileType": "نوع الملف غير صالح"
+  },
+  "guide": {
+    "title": "دليل المساعدة",
+    "subtitle": "تعلم كيفية استخدام منصة PROMOSPORT من خلال دروسنا التعليمية المرئية خطوة بخطوة.",
+    "register": {
+      "title": "التسجيل",
+      "description": "أنشئ حسابك كمرشح باتباع هذه الخطوات.",
+      "step1": {
+        "title": "إنشاء حساب",
+        "description": "املأ معلوماتك الشخصية لإنشاء حسابك."
+      },
+      "step2": {
+        "title": "المسار الأكاديمي",
+        "description": "أدخل شهاداتك ومؤهلاتك الدراسية."
+      },
+      "step3": {
+        "title": "الخبرة المهنية",
+        "description": "أضف خبرتك المهنية إن وجدت."
+      },
+      "step4": {
+        "title": "الوثائق المطلوبة",
+        "description": "ارفع مستنداتك (بطاقة التعريف، الشهادة، السيرة الذاتية، إلخ)."
+      },
+      "step5": {
+        "title": "اختيار المناظرة",
+        "description": "اختر المناظرة التي تريد التقدم لها."
+      },
+      "step6": {
+        "title": "التأكيد والإرسال",
+        "description": "راجع معلوماتك وأرسل طلب ترشحك."
+      }
+    },
+    "apply": {
+      "title": "التقديم",
+      "description": "قدم مباشرة لمناظرة من خلال الجمع بين التسجيل وطلب الترشح.",
+      "direct": {
+        "title": "التقديم المباشر",
+        "description": "اكتشف كيفية التقديم في خطوة واحدة من صفحة المناظرة."
+      },
+      "verify": {
+        "title": "التحقق من البريد الإلكتروني",
+        "description": "فعّل حسابك بإدخال رمز التحقق المرسل إلى بريدك الإلكتروني."
+      }
+    },
+    "dashboard": {
+      "title": "مساحتي",
+      "description": "أدر طلب ترشحك وتابع نتائجك.",
+      "overview": {
+        "title": "لوحة التحكم",
+        "description": "اطلع على حالة طلباتك وإشعاراتك."
+      },
+      "results": {
+        "title": "متابعة النتائج",
+        "description": "ابحث عن درجاتك وترتيبك برقم بطاقة التعريف الوطنية."
+      }
+    },
+    "noVideos": "ستكون الفيديوهات متاحة قريباً.",
+    "contactSupport": "تحتاج مساعدة إضافية؟ تواصل معنا على",
+    "contactEmail": "support@promosport.tn"
   },
   "messages": {
     "success": "تمت العملية بنجاح",

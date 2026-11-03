@@ -35,7 +35,8 @@
     "logout": "Logout",
     "myApplications": "My Applications",
     "profile": "Profile",
-    "settings": "Settings"
+    "settings": "Settings",
+    "guide": "Guide"
   },
   "auth": {
     "login": "Login",
@@ -54,7 +55,8 @@
     "invalidCredentials": "Invalid email or password",
     "emailVerified": "Email verified successfully",
     "registrationSuccess": "Registration successful!",
-    "wrongCode": "Invalid verification code"
+    "wrongCode": "Invalid verification code",
+    "confirm": "Confirmer"
   },
   "candidate": {
     "personalInfo": "Personal Information",
@@ -170,6 +172,65 @@
     "invalidDate": "Invalid date",
     "fileTooLarge": "File size exceeds {max}MB",
     "invalidFileType": "Invalid file type"
+  },
+  "guide": {
+    "title": "Guide d'aide",
+    "subtitle": "Apprenez à utiliser la plateforme PROMOSPORT avec nos tutoriels vidéo étape par étape.",
+    "register": {
+      "title": "S'inscrire",
+      "description": "Créez votre compte candidat en suivant ces étapes.",
+      "step1": {
+        "title": "Créer un compte",
+        "description": "Remplissez vos informations personnelles pour créer votre compte."
+      },
+      "step2": {
+        "title": "Parcours académique",
+        "description": "Renseignez votre formation et vos diplômes."
+      },
+      "step3": {
+        "title": "Expérience professionnelle",
+        "description": "Ajoutez votre expérience professionnelle si applicable."
+      },
+      "step4": {
+        "title": "Pièces justificatives",
+        "description": "Téléversez vos documents (CIN, diplôme, CV, etc.)."
+      },
+      "step5": {
+        "title": "Choisir un poste",
+        "description": "Sélectionnez le concours auquel vous souhaitez postuler."
+      },
+      "step6": {
+        "title": "Validation et soumission",
+        "description": "Vérifiez vos informations et soumettez votre candidature."
+      }
+    },
+    "apply": {
+      "title": "Postuler",
+      "description": "Postulez directement à un concours en combinant inscription et candidature.",
+      "direct": {
+        "title": "Postuler directement",
+        "description": "Découvrez comment postuler en une seule étape depuis la page du concours."
+      },
+      "verify": {
+        "title": "Vérification de l'e-mail",
+        "description": "Activez votre compte en entrant le code de vérification reçu par e-mail."
+      }
+    },
+    "dashboard": {
+      "title": "Mon espace",
+      "description": "Gérez votre candidature et suivez vos résultats.",
+      "overview": {
+        "title": "Tableau de bord",
+        "description": "Consultez l'état de vos candidatures et vos notifications."
+      },
+      "results": {
+        "title": "Consulter les résultats",
+        "description": "Recherchez vos notes et votre classement avec votre numéro CIN."
+      }
+    },
+    "noVideos": "Les vidéos seront disponibles prochainement.",
+    "contactSupport": "Besoin d'aide supplémentaire ? Contactez-nous à",
+    "contactEmail": "support@promosport.tn"
   },
   "messages": {
     "success": "Operation completed successfully",

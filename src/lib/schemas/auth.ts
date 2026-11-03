@@ -5,6 +5,7 @@ const diplomaSchema = z.object({
   diploma: z.string().min(1),
   institution: z.string().min(1),
   grade: z.string().min(1),
+  noteGenerale: z.string().optional(),
   graduationYear: z.number().int().min(1960),
 });
 
@@ -21,10 +22,7 @@ export const candidateRegistrationSchema = z.object({
   email: z.string().email("Email must be valid"),
   password: z
     .string()
-    .min(8, "Password must be at least 8 characters")
-    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
-    .regex(/[a-z]/, "Password must contain at least one lowercase letter")
-    .regex(/[0-9]/, "Password must contain at least one number"),
+    .min(8, "Password must be at least 8 characters"),
   confirmPassword: z.string(),
   fullName: z.string().min(3, "Full name must be at least 3 characters"),
   cin: z
@@ -36,9 +34,10 @@ export const candidateRegistrationSchema = z.object({
     return !isNaN(parsed.getTime()) && parsed < new Date();
   }, "Date of birth must be a valid date in the past"),
   gender: z.enum(["MALE", "FEMALE"], { errorMap: () => ({ message: "Gender must be MALE or FEMALE" }) }),
-  phone: z.string().regex(/^\d{2}\s\d{3}\s\d{3}$/, "Phone must be in format: XX XXX XXX"),
+  phone: z.string().regex(/^\d{8}$/, "Phone must be exactly 8 digits"),
   governorate: z.string().min(1, "Governorate is required"),
   delegation: z.string().min(1, "Delegation is required"),
+  address: z.string().optional().default(""),
   smsOptIn: z.boolean().optional().default(true),
   diplomas: z.array(diplomaSchema).optional().default([]),
   hasExperience: z.boolean().optional().default(false),
@@ -59,7 +58,7 @@ export const adminLoginSchema = z.object({
 });
 
 export const verifyEmailSchema = z.object({
-  candidateId: z.string().uuid("Candidate ID must be a valid UUID"),
+  candidateId: z.string().min(1, "Candidate ID is required"),
   code: z.string().length(6, "Code must be 6 digits").regex(/^\d+$/, "Code must contain only numbers"),
 });
 
@@ -70,10 +69,7 @@ export const forgotPasswordSchema = z.object({
 export const resetPasswordSchema = z.object({
   password: z
     .string()
-    .min(8, "Password must be at least 8 characters")
-    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
-    .regex(/[a-z]/, "Password must contain at least one lowercase letter")
-    .regex(/[0-9]/, "Password must contain at least one number"),
+    .min(8, "Password must be at least 8 characters"),
   confirmPassword: z.string(),
   code: z.string().length(6),
 }).refine((data) => data.password === data.confirmPassword, {

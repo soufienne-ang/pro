@@ -1,29 +1,48 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
-import Link from "next/link";
-import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { FileDropzone, UploadedFile } from "@/components/file-dropzone";
-import { AlertCircle, HelpCircle, Lock, Briefcase, FileText, CheckCircle2, Shield } from "lucide-react";
+import { AlertCircle, HelpCircle, Briefcase, FileText, CheckCircle2, Shield } from "lucide-react";
 
 const GOVERNORATES = [
-  "Ariana", "Béja", "Ben Arous", "Bizerte", "Gabès", "Gafsa", "Jendouba", "Kairouan",
-  "Kasserine", "Kébili", "Le Kef", "Mahdia", "Manouba", "Medenine", "Monastir", "Nabeul",
-  "Sfax", "Sidi Bouzid", "Siliana", "Sousse", "Tataouine", "Tozeur", "Tunis", "Zaghouan",
+  { value: "Ariana", labelAr: "أريانة" },
+  { value: "Béja", labelAr: "باجة" },
+  { value: "Ben Arous", labelAr: "بن عروس" },
+  { value: "Bizerte", labelAr: "بنزرت" },
+  { value: "Gabès", labelAr: "قابس" },
+  { value: "Gafsa", labelAr: "قفصة" },
+  { value: "Jendouba", labelAr: "جندوبة" },
+  { value: "Kairouan", labelAr: "القيروان" },
+  { value: "Kasserine", labelAr: "القصرين" },
+  { value: "Kébili", labelAr: "قبلي" },
+  { value: "Le Kef", labelAr: "الكاف" },
+  { value: "Mahdia", labelAr: "المهدية" },
+  { value: "Manouba", labelAr: "منوبة" },
+  { value: "Medenine", labelAr: "مدنين" },
+  { value: "Monastir", labelAr: "المنستير" },
+  { value: "Nabeul", labelAr: "نابل" },
+  { value: "Sfax", labelAr: "صفاقس" },
+  { value: "Sidi Bouzid", labelAr: "سيدي بوزيد" },
+  { value: "Siliana", labelAr: "سليانة" },
+  { value: "Sousse", labelAr: "سوسة" },
+  { value: "Tataouine", labelAr: "تطاوين" },
+  { value: "Tozeur", labelAr: "توزر" },
+  { value: "Tunis", labelAr: "تونس" },
+  { value: "Zaghouan", labelAr: "زغوان" },
 ];
 
 const STUDY_LEVELS = [
-  { value: "BAC", label: "Baccalauréat" },
-  { value: "BAC_PLUS_2", label: "Bac + 2 (DEUG)" },
-  { value: "LICENCE", label: "Licence (Bac + 3)" },
-  { value: "MAITRISE", label: "Maîtrise (Bac + 4)" },
-  { value: "MASTER", label: "Master (Bac + 5)" },
-  { value: "DOCTORAT", label: "Doctorat" },
+  { value: "BAC", labelFr: "Baccalauréat", labelAr: "بكالوريا" },
+  { value: "BAC_PLUS_2", labelFr: "Bac + 2 (DEUG)", labelAr: "باك + 2 (ديوغ)" },
+  { value: "LICENCE", labelFr: "Licence (Bac + 3)", labelAr: "إجازة (باك + 3)" },
+  { value: "MAITRISE", labelFr: "Maîtrise (Bac + 4)", labelAr: "أستاذية (باك + 4)" },
+  { value: "MASTER", labelFr: "Master (Bac + 5)", labelAr: "ماجستير (باك + 5)" },
+  { value: "DOCTORAT", labelFr: "Doctorat", labelAr: "دكتوراه" },
 ];
 
 const DOCUMENT_TYPES = [
@@ -74,8 +93,6 @@ const FR_STEPS = [
 ];
 
 export default function RegisterPage() {
-  const t = useTranslations("auth");
-  const candT = useTranslations("candidate");
   const params = useParams();
   const locale = (params.locale as string) || "fr";
   const isRTL = locale === "ar";
@@ -114,8 +131,17 @@ export default function RegisterPage() {
   const [confirmedDocs, setConfirmedDocs] = useState<string[]>([]);
   const [docsAcknowledged, setDocsAcknowledged] = useState(false);
   const [uploadedDocs, setUploadedDocs] = useState<UploadedFile[]>([]);
+  const [jobs, setJobs] = useState<{ id: string; code: string; titleFr: string; titleAr: string; deadline: string }[]>([]);
+  const [selectedJob, setSelectedJob] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/jobs?status=PUBLISHED")
+      .then(r => r.ok ? r.json() : [])
+      .then(j => setJobs(Array.isArray(j) ? j : []))
+      .catch(() => {});
+  }, []);
 
   const addDiploma = () => {
     setDiplomas([...diplomas, { studyLevel: "", diploma: "", institution: "", grade: "", graduationYear: new Date().getFullYear() }]);
@@ -149,15 +175,14 @@ export default function RegisterPage() {
     const { name, value, type } = e.target;
     if (type === "number") {
       setFormData({ ...formData, [name]: parseInt(value) });
+    } else if (name === "phone") {
+      setFormData({ ...formData, [name]: value.replace(/\D/g, "").slice(0, 8) });
     } else {
       setFormData({ ...formData, [name]: value });
     }
     if (name === "password") {
       const errors: string[] = [];
       if (value.length < 8) errors.push(isRTL ? "8 أحرف على الأقل" : "8 caractères minimum");
-      if (!/[A-Z]/.test(value)) errors.push(isRTL ? "حرف كبير واحد على الأقل" : "1 lettre majuscule minimum");
-      if (!/[a-z]/.test(value)) errors.push(isRTL ? "حرف صغير واحد على الأقل" : "1 lettre minuscule minimum");
-      if (!/[0-9]/.test(value)) errors.push(isRTL ? "رقم واحد على الأقل" : "1 chiffre minimum");
       setPasswordErrors(errors);
     }
   };
@@ -206,6 +231,7 @@ export default function RegisterPage() {
         return;
       }
 
+      sessionStorage.setItem("verifyCandidateId", data.candidateId);
       router.push(`/${locale}/verify-email?candidateId=${data.candidateId}`);
     } catch {
       setError(isRTL ? "حدث خطأ. يرجى المحاولة مرة أخرى." : "An error occurred. Please try again.");
@@ -252,7 +278,7 @@ export default function RegisterPage() {
           {/* Sidebar - Steps */}
           <div className="lg:col-span-1">
             <div className="space-y-3 sticky top-24">
-              {STEPS.map((step, index) => (
+              {STEPS.map((step) => (
                 <div
                   key={step.id}
                   onClick={() => currentStep > step.id && setCurrentStep(step.id)}
@@ -305,7 +331,11 @@ export default function RegisterPage() {
                 <div>
                   <p className="text-sm font-bold text-gray-900">{isRTL ? "هل تحتاج مساعدة؟" : "Besoin d'assistance ?"}</p>
                   <p className="text-xs text-gray-700 mt-2 leading-relaxed">{isRTL ? "راجع دليلنا الكامل أو اتصل بفريق الدعم." : "Consultez notre guide complet ou contactez notre support."}</p>
-                  <button className="mt-3 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg transition-colors w-full">
+                  <button
+                    type="button"
+                    onClick={() => window.location.href = `/${locale}/guide#register`}
+                    className="mt-3 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg transition-colors w-full"
+                  >
                     {isRTL ? "عرض الدليل الكامل" : "Voir le guide complet"}
                   </button>
                 </div>
@@ -451,9 +481,13 @@ export default function RegisterPage() {
                         <Input
                           id="phone"
                           name="phone"
-                          placeholder={isRTL ? "مثال: 20 123 456" : "Ex: 20 123 456"}
+                          type="tel"
+                          placeholder={isRTL ? "مثال: 20123456" : "Ex: 20123456"}
                           value={formData.phone}
                           onChange={handleChange}
+                          maxLength={8}
+                          pattern="\d{8}"
+                          inputMode="numeric"
                           required
                           className="mt-1 h-11 border-gray-300 focus:ring-2 focus:ring-red-500 focus:border-transparent"
                         />
@@ -543,8 +577,8 @@ export default function RegisterPage() {
                         >
                           <option value="">{isRTL ? "اختر ولاية" : "Sélectionner un gouvernorat"}</option>
                           {GOVERNORATES.map((g) => (
-                            <option key={g} value={g}>
-                              {g}
+                            <option key={g.value} value={g.value}>
+                              {isRTL ? g.labelAr : g.value}
                             </option>
                           ))}
                         </select>
@@ -611,7 +645,7 @@ export default function RegisterPage() {
                                 className="flex h-11 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-red-500 focus:border-transparent">
                                 <option value="">{isRTL ? "اختر المستوى" : "Sélectionner"}</option>
                                 {STUDY_LEVELS.map((level) => (
-                                  <option key={level.value} value={level.value}>{level.label}</option>
+                                  <option key={level.value} value={level.value}>{isRTL ? level.labelAr : level.labelFr}</option>
                                 ))}
                               </select>
                             </div>
@@ -633,6 +667,7 @@ export default function RegisterPage() {
                                 onChange={(e) => updateDiploma(index, "grade", e.target.value)}
                                 placeholder={isRTL ? "مثال: جيد جداً" : "Ex: Très bien"} />
                             </div>
+
                             <div className="space-y-2">
                               <Label className="text-sm font-semibold text-gray-700">{isRTL ? "سنة التخرج *" : "Année d'obtention *"}</Label>
                               <Input type="number" value={diploma.graduationYear}
@@ -864,14 +899,75 @@ export default function RegisterPage() {
                   </div>
                 )}
 
-                {/* Step 5: Placeholder */}
+                {/* Step 5: Choix du poste */}
                 {currentStep === 5 && (
-                  <div className="p-12 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl text-center border-2 border-dashed border-gray-300">
-                    <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-300 text-gray-600 rounded-full mb-4">
-                      <FileText size={32} />
+                  <div className="space-y-6">
+                    <div className="flex items-center gap-4 pb-6 border-b-2 border-gray-200">
+                      <div className="flex items-center justify-center w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-full shadow-md">
+                        <Briefcase size={20} />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h2 className="text-2xl font-bold text-gray-900">
+                            {isRTL ? "اختيار الوظيفة" : "Choix du poste"}
+                          </h2>
+                        </div>
+                        <p className="text-sm text-gray-500 mt-1">
+                          {isRTL
+                            ? "اختر الوظيفة التي ترغب في التقديم عليها. يمكنك اختيار وظيفة واحدة فقط."
+                            : "Sélectionnez le poste auquel vous souhaitez postuler. Vous ne pouvez choisir qu'un seul poste."}
+                        </p>
+                      </div>
                     </div>
-                    <p className="text-gray-700 font-semibold text-lg">{isRTL ? `الخطوة ${currentStep}` : `Étape ${currentStep}`}</p>
-                    <p className="text-gray-500 text-sm mt-2">{isRTL ? "المحتوى قيد التطوير" : "Contenu en cours de développement"}</p>
+
+                    <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800 flex items-start gap-2">
+                      <svg className="w-5 h-5 mt-0.5 shrink-0 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                      </svg>
+                      <span>
+                        {isRTL
+                          ? "يرجى اختيار الوظيفة التي ترغب في التقديم عليها. يمكنك اختيار وظيفة واحدة فقط."
+                          : "Veuillez sélectionner le poste auquel vous souhaitez postuler. Vous ne pouvez choisir qu'un seul poste."}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {jobs.length === 0 ? (
+                        <p className="col-span-2 text-center text-slate-500 py-8">
+                          {isRTL ? "لا توجد وظائف متاحة حالياً" : "Aucune offre disponible actuellement"}
+                        </p>
+                      ) : (
+                        jobs.map((job) => (
+                          <Card key={job.id}
+                            className={`cursor-pointer transition-all duration-200 ${
+                              selectedJob === job.id
+                                ? "ring-2 ring-blue-500 border-blue-500 shadow-md"
+                                : "hover:border-blue-300 hover:shadow-sm"
+                            }`}
+                            onClick={() => setSelectedJob(job.id)}>
+                            <CardContent className="p-5">
+                              <div className="flex items-start justify-between">
+                                <div>
+                                  <h3 className="font-semibold text-sm">{isRTL ? job.titleAr : job.titleFr}</h3>
+                                  <p className="text-xs text-slate-500">{job.code}</p>
+                                </div>
+                                {selectedJob === job.id && (
+                                  <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                                    <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                  </div>
+                                )}
+                              </div>
+                              <p className="text-xs text-slate-500 mt-2">
+                                {isRTL ? "آخر أجل: " : "Date limite: "}
+                                {new Date(job.deadline).toLocaleDateString(locale === "ar" ? "ar-TN" : "fr-FR")}
+                              </p>
+                            </CardContent>
+                          </Card>
+                        ))
+                      )}
+                    </div>
                   </div>
                 )}
 

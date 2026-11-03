@@ -85,10 +85,11 @@ export default function ConcoursDetailPage() {
   const expired = isExpired(job.deadline);
 
   const tabs: { key: Tab; label: string; labelAr: string }[] = [
+     { key: "inscription", label: "Inscription", labelAr: "التسجيل" },
+      { key: "exclusion", label: "Conditions d'exclusion", labelAr: "شروط الإقصاء" },
+      { key: "documents", label: "Documents obligatoires", labelAr: "الوثائق المطلوبة" },
     { key: "description", label: "Description", labelAr: "الوصف" },
-    { key: "documents", label: "Documents obligatoires", labelAr: "الوثائق الإجبارية" },
-    { key: "exclusion", label: "Conditions d'exclusion", labelAr: "شروط الإقصاء" },
-    { key: "inscription", label: "Inscription", labelAr: "التسجيل" },
+   
   ];
 
   return (
@@ -157,21 +158,29 @@ export default function ConcoursDetailPage() {
               </div>
             </div>
 
-            <div className="flex gap-1 mb-8 bg-slate-100 rounded-lg p-1 w-fit">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.key}
-                  onClick={() => setActiveTab(tab.key)}
-                  className={
-                    "px-5 py-2 text-sm font-medium rounded-md transition-colors " +
-                    (activeTab === tab.key
-                      ? "bg-white text-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground")
-                  }
-                >
-                  {isRTL ? tab.labelAr : tab.label}
-                </button>
-              ))}
+            <div className="flex justify-center mb-8">
+              <div className="inline-flex items-center gap-1 bg-slate-100 rounded-xl p-1" dir="ltr">
+                {tabs.map((tab) => {
+                  const active = activeTab === tab.key;
+                  return (
+                    <button
+                      key={tab.key}
+                      onClick={() => setActiveTab(tab.key)}
+                      className={
+                        "relative px-5 py-2.5 text-lg font-medium rounded-lg transition-all duration-200 " +
+                        (active
+                          ? "bg-white text-primary shadow-sm border border-slate-200 scale-105"
+                          : "text-slate-500 hover:text-slate-800 hover:bg-slate-200/50 hover:scale-105")
+                      }
+                    >
+                      {isRTL ? tab.labelAr : tab.label}
+                      {active && (
+                        <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-0.5 bg-primary rounded-full" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             {activeTab === "description" && (
@@ -216,7 +225,7 @@ export default function ConcoursDetailPage() {
               <div className="space-y-6">
                 <div>
                   <h2 className="text-lg font-semibold text-slate-900 mb-3">
-                    {isRTL ? "الوثائق الإجبارية المكونة لملف الترشح" : "Documents obligatoires constituant le dossier de candidature"}
+                    {isRTL ? "الوثائق المطلوبة المكونة لملف الترشح" : "Documents obligatoires constituant le dossier de candidature"}
                   </h2>
                   {job.requiredDocs ? (
                     <ul className="text-slate-700 leading-relaxed space-y-2">

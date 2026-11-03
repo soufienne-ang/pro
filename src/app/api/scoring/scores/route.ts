@@ -15,6 +15,27 @@ const updateScoresSchema = z.object({
   scores: z.array(scoreEntrySchema),
 });
 
+export async function DELETE(request: NextRequest) {
+  try {
+    const user = await requirePermission("submitScores");
+    if (isErrorResponse(user)) return user;
+
+    const { searchParams } = new URL(request.url);
+    const applicationId = searchParams.get("applicationId");
+
+    if (!applicationId) {
+      return NextResponse.json({ error: "applicationId is required" }, { status: 400 });
+    }
+
+    await prisma.score.deleteMany({ where: { applicationId } });
+
+    return NextResponse.json({ message: "Scores deleted" });
+  } catch (error) {
+    console.error("Failed to delete scores:", error);
+    return NextResponse.json({ error: "Failed to delete scores" }, { status: 500 });
+  }
+}
+
 export async function PUT(request: NextRequest) {
   try {
     const user = await requirePermission("submitScores");

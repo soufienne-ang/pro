@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/server/prisma";
+import { ensureScoringCriteria, computeDossierScore, combineTotalScore } from "@/server/scoring";
 import { requirePermission, isErrorResponse } from "@/lib/roles";
 
 export async function GET(request: NextRequest) {
@@ -14,6 +15,16 @@ export async function GET(request: NextRequest) {
     if (!jobId) {
       return NextResponse.json({ error: "jobId is required" }, { status: 400 });
     }
+
+    const job = await prisma.job.findUnique({
+      where: { id: jobId },
+      select: { profile: true, dossierWeight: true, oralWeight: true },
+    });
+    if (!job) {
+      return NextResponse.json({ error: "Job not found" }, { status: 404 });
+    }
+
+    await ensureScoringCriteria(jobId, job.profile);
 
     const [criteria, applications] = await Promise.all([
       prisma.scoredCriteria.findMany({
@@ -41,26 +52,32 @@ export async function GET(request: NextRequest) {
       }),
     ]);
 
-    const totalWeight = criteria.reduce((sum, c) => sum + c.weight, 0);
-
     const ranked = applications.map((app) => {
       const scoreMap = new Map(app.scores.map((s) => [s.criteriaId, s.value]));
-      const weightedScore = criteria.reduce((sum, c) => {
-        const val = scoreMap.get(c.id) || 0;
-        return sum + val * (c.weight / totalWeight);
-      }, 0);
+      const scoresWithMeta = criteria.map((c) => ({
+        criteriaId: c.id,
+        criteriaName: c.name,
+        weight: c.weight,
+        value: scoreMap.get(c.id) || 0,
+      }));
+
+      const oralSum = scoresWithMeta.reduce((sum, s) => sum + s.value, 0);
+      const dossier = computeDossierScore({
+        academicInfo: app.academicInfo,
+        profile: job.profile,
+        eduLevel: app.eduLevel,
+      });
+      const total = combineTotalScore(dossier, oralSum, job);
 
       return {
         applicationId: app.id,
         candidate: app.candidate,
         status: app.status,
-        scores: criteria.map((c) => ({
-          criteriaId: c.id,
-          criteriaName: c.name,
-          weight: c.weight,
-          value: scoreMap.get(c.id) || 0,
-        })),
-        weightedScore: Math.round(weightedScore * 100) / 100,
+        eduLevel: app.eduLevel,
+        scores: scoresWithMeta,
+        oralTotal: Math.round(oralSum * 100) / 100,
+        applicationScore: dossier,
+        weightedScore: total,
       };
     });
 

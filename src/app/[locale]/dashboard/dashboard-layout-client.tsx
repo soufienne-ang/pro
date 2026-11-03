@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { signOut } from "next-auth/react";
 import { Session } from "next-auth";
 
 interface DashboardLayoutClientProps {
@@ -28,12 +29,8 @@ export function DashboardLayoutClient({ children, locale, session }: DashboardLa
           </Link>
           <div className="flex items-center gap-4">
             <span className="text-sm text-muted-foreground hidden sm:inline">{session.user.email}</span>
-            <Link href={`/${locale}/apply`}>
-              <span className="px-3 py-1.5 text-sm font-medium bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors cursor-pointer">
-                {isRTL ? "تقديم طلب جديد" : "Nouvelle candidature"}
-              </span>
-            </Link>
-            <Link href={`/${locale}/api/auth/signout`}>
+            
+            <Link href={`/${locale}/api/auth/signout`} onClick={(e) => { e.preventDefault(); signOut({ callbackUrl: `/${locale}` }); }}>
               <span className="px-3 py-1.5 text-sm font-medium border rounded-lg hover:bg-slate-50 transition-colors cursor-pointer">
                 {isRTL ? "تسجيل الخروج" : "Déconnexion"}
               </span>

@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/server/prisma";
 import { requirePermission, isErrorResponse } from "@/lib/roles";
+import { updateJobSchema } from "@/lib/schemas/jobs";
 
 export async function GET(
   _request: NextRequest,
@@ -21,6 +22,10 @@ export async function GET(
         descriptionAr: true,
         location: true,
         jobType: true,
+        profile: true,
+        minEduLevel: true,
+        dossierWeight: true,
+        oralWeight: true,
         openings: true,
         deadline: true,
         status: true,
@@ -53,9 +58,20 @@ export async function PUT(
     const { id } = await params;
     const body = await request.json();
 
+    const parsed = updateJobSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
+    }
+
+    const { deadline, pdfUrl, imageUrl, ...rest } = parsed.data;
     const job = await prisma.job.update({
       where: { id },
-      data: body,
+      data: {
+        ...rest,
+        ...(deadline ? { deadline: new Date(deadline) } : {}),
+        pdfUrl: pdfUrl || null,
+        imageUrl: imageUrl || null,
+      },
     });
 
     await prisma.auditLog.create({

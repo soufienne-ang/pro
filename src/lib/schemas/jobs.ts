@@ -8,6 +8,10 @@ export const createJobSchema = z.object({
   descriptionAr: z.string().max(10000).optional().default(""),
   location: z.string().max(200).optional().default(""),
   jobType: z.string().max(100).optional().default(""),
+  profile: z.enum(["ACADEMIC", "MANUAL"]).optional().default("ACADEMIC"),
+  minEduLevel: z.enum(["NONE", "PRIMARY", "MIDDLE", "SECONDARY", "VOCATIONAL"]).optional().default("SECONDARY"),
+  dossierWeight: z.coerce.number().min(0).max(100).optional().default(70),
+  oralWeight: z.coerce.number().min(0).max(100).optional().default(30),
   openings: z.coerce.number().int().positive().optional().default(1),
   deadline: z.string().refine((date) => {
     const parsed = new Date(date);
@@ -17,11 +21,11 @@ export const createJobSchema = z.object({
   exclusionConditions: z.string().max(10000).optional().default(""),
   pdfUrl: z.preprocess(
     (v) => (v === "" || v === null || v === undefined ? null : v),
-    z.string().url().nullable()
+    z.string().nullable()
   ).optional().default(null),
   imageUrl: z.preprocess(
     (v) => (v === "" || v === null || v === undefined ? null : v),
-    z.string().url().nullable()
+    z.string().nullable()
   ).optional().default(null),
   status: z.enum(["DRAFT", "PUBLISHED", "CLOSED"]).optional().default("DRAFT"),
 });

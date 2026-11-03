@@ -1,6 +1,14 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { Label } from "@/components/ui/label";
+
+interface Job {
+  id: string;
+  code: string;
+  titleAr: string;
+  titleFr: string;
+}
 
 interface Application {
   id: string;
@@ -25,11 +33,15 @@ const STATUS_CFG: Record<string, { label: Record<string, string>; color: string 
 export default function AdminApplicationsPage() {
   const [locale, setLocale] = useState("fr");
   const [apps, setApps] = useState<Application[]>([]);
+  const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filters, setFilters] = useState({ status: "", search: "", page: 1 });
+  const [filters, setFilters] = useState({ status: "", search: "", jobId: "", page: 1 });
   const [total, setTotal] = useState(0);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [detailApp, setDetailApp] = useState<Application | null>(null);
+  const [editStatus, setEditStatus] = useState("");
+  const [statusNote, setStatusNote] = useState("");
+  const [savingStatus, setSavingStatus] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -37,6 +49,10 @@ export default function AdminApplicationsPage() {
     setFilters(f => ({ ...f, status: statusParam }));
     const segments = window.location.pathname.split("/");
     setLocale(segments[1] || "fr");
+    fetch("/api/jobs?status=ALL")
+      .then(r => r.ok ? r.json() : [])
+      .then(j => setJobs(Array.isArray(j) ? j : []))
+      .catch(() => {});
   }, []);
 
   const fetchApps = useCallback(async () => {
@@ -44,6 +60,7 @@ export default function AdminApplicationsPage() {
     const params = new URLSearchParams();
     if (filters.status) params.set("status", filters.status);
     if (filters.search) params.set("search", filters.search);
+    if (filters.jobId) params.set("jobId", filters.jobId);
     params.set("page", String(filters.page));
     params.set("limit", "20");
     try {
@@ -51,7 +68,7 @@ export default function AdminApplicationsPage() {
       if (res.ok) { const d = await res.json(); setApps(d.applications); setTotal(d.pagination?.total || 0); }
     } catch (e) { console.error(e); }
     finally { setLoading(false); }
-  }, [filters.status, filters.search, filters.page]);
+  }, [filters.status, filters.search, filters.jobId, filters.page]);
 
   useEffect(() => { fetchApps(); }, [fetchApps]);
 
@@ -85,7 +102,7 @@ export default function AdminApplicationsPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">{isRTL ? "الطلبات" : "Candidatures"}</h1>
+        <h1 className="text-2xl font-bold">{isRTL ? "المترشحين" : "Candidatures"}</h1>
       </div>
 
       <div className="bg-white rounded-xl border p-4 shadow-sm mb-6">
@@ -102,15 +119,27 @@ export default function AdminApplicationsPage() {
               </button>
             ))}
           </div>
-          <div className="flex gap-2 ml-auto">
+          <div className="flex gap-2 ml-auto items-center">
+            <select value={filters.jobId} onChange={e => setFilters(f => ({ ...f, jobId: e.target.value, page: 1 }))}
+              className="h-9 rounded-md border border-input bg-background px-3 text-sm min-w-[180px]">
+              <option value="">{isRTL ? "كل المناظرات" : "Tous les concours"}</option>
+              {jobs.map(j => (
+                <option key={j.id} value={j.id}>{j.code} — {isRTL ? j.titleAr : j.titleFr}</option>
+              ))}
+            </select>
             <input type="text" value={filters.search} onChange={e => setFilters(f => ({ ...f, search: e.target.value }))}
               onKeyDown={e => e.key === "Enter" && handleSearch()}
-              placeholder={isRTL ? "بحث بالاسم أو CIN" : "Recherche nom/CIN"}
+              placeholder={isRTL ? "بحث بالاسم أو بطاقة التعريف الوطنية" : "Recherche nom/CIN"}
               className="h-9 rounded-md border border-input bg-background px-3 text-sm w-48" />
             <button onClick={handleSearch}
               className="px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-sm">
               {isRTL ? "بحث" : "Rechercher"}
             </button>
+            <a href={`/api/applications/export?search=${filters.search}&jobId=${filters.jobId}&status=${filters.status}`}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg border hover:bg-slate-50 transition-colors">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+              XLS
+            </a>
           </div>
         </div>
       </div>
@@ -144,9 +173,9 @@ export default function AdminApplicationsPage() {
                   if (e.target.checked) setSelectedIds(new Set(apps.map(a => a.id)));
                   else setSelectedIds(new Set());
                 }} checked={selectedIds.size === apps.length && apps.length > 0} className="rounded" /></th>
-                <th className="text-left p-3 font-medium">{isRTL ? "المرشح" : "Candidat"}</th>
-                <th className="text-left p-3 font-medium hidden md:table-cell">{isRTL ? "الوظيفة" : "Poste"}</th>
-                <th className="text-left p-3 font-medium hidden lg:table-cell">CIN</th>
+                <th className="text-right p-3 font-medium">{isRTL ? "المترشح" : "Candidat"}</th>
+                <th className="text-right p-3 font-medium hidden md:table-cell">{isRTL ? "المناظرة" : "Poste"}</th>
+                <th className="text-right p-3 font-medium hidden lg:table-cell">{isRTL ? "بطاقة التعريف الوطنية" : "CIN"}</th>
                 <th className="text-center p-3 font-medium">{isRTL ? "الحالة" : "Statut"}</th>
                 <th className="text-right p-3 font-medium">{isRTL ? "إجراءات" : "Actions"}</th>
               </tr>
@@ -172,10 +201,19 @@ export default function AdminApplicationsPage() {
                       </select>
                     </td>
                     <td className="p-3 text-right">
-                      <button onClick={() => setDetailApp(app)}
-                        className="text-xs text-primary hover:underline cursor-pointer">
-                        {isRTL ? "عرض" : "Voir"}
-                      </button>
+                      <div className="flex items-center justify-end gap-2">
+                        <button onClick={() => { setDetailApp(app); setEditStatus(app.status); setStatusNote(""); }}
+                          className="text-xs text-primary hover:underline cursor-pointer">
+                          {isRTL ? "عرض" : "Voir"}
+                        </button>
+                        <button onClick={async () => {
+                          if (!window.confirm(isRTL ? "هل أنت متأكد من حذف هذه الترشح؟" : "Confirmer la suppression de cette candidature ?")) return;
+                          const res = await fetch(`/api/applications/${app.id}`, { method: "DELETE" });
+                          if (res.ok) fetchApps(); else alert(isRTL ? "فشل الحذف" : "Échec de la suppression");
+                        }} className="text-xs font-medium px-2 py-1 rounded bg-red-50 text-red-600 hover:bg-red-100 transition-colors">
+                          {isRTL ? "حذف" : "Supprimer"}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );
@@ -203,23 +241,62 @@ export default function AdminApplicationsPage() {
               <h2 className="text-lg font-bold">{isRTL ? "تفاصيل الطلب" : "Détails de la candidature"}</h2>
               <button onClick={() => setDetailApp(null)} className="text-muted-foreground hover:text-foreground text-xl">&times;</button>
             </div>
-            <div className="space-y-3">
-              <div><span className="text-sm text-muted-foreground">{isRTL ? "المرشح" : "Candidat"}:</span> <span className="text-sm font-medium">{detailApp.candidate.fullName}</span></div>
-              <div><span className="text-sm text-muted-foreground">Email:</span> <span className="text-sm">{detailApp.candidate.email}</span></div>
-              <div><span className="text-sm text-muted-foreground">CIN:</span> <span className="text-sm font-mono">{detailApp.candidate.cin}</span></div>
-              <div><span className="text-sm text-muted-foreground">{isRTL ? "الهاتف" : "Tél"}:</span> <span className="text-sm">{detailApp.candidate.phone}</span></div>
-              <div><span className="text-sm text-muted-foreground">{isRTL ? "الولاية" : "Gouvernorat"}:</span> <span className="text-sm">{detailApp.candidate.governorate}</span></div>
-              <div><span className="text-sm text-muted-foreground">{isRTL ? "الوظيفة" : "Poste"}:</span> <span className="text-sm">{isRTL ? detailApp.job.titleAr : detailApp.job.titleFr}</span></div>
-              <div><span className="text-sm text-muted-foreground">{isRTL ? "الحالة" : "Statut"}:</span>
-                <span className={`text-xs font-medium rounded-full px-2 py-0.5 ml-2 ${STATUS_CFG[detailApp.status]?.color || ""}`}>
-                  {isRTL ? STATUS_CFG[detailApp.status]?.label.ar || detailApp.status : STATUS_CFG[detailApp.status]?.label.fr || detailApp.status}
-                </span>
+
+            <div className="space-y-3 mb-6 pb-4 border-b">
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">{isRTL ? "معلومات المترشح" : "Informations candidat"}</h3>
+              <div className="grid grid-cols-2 gap-2 text-sm">
+                <div><span className="text-muted-foreground">{isRTL ? "الاسم" : "Nom"}:</span> <span className="font-medium">{detailApp.candidate.fullName}</span></div>
+                <div><span className="text-muted-foreground">Email:</span> <span>{detailApp.candidate.email}</span></div>
+                <div><span className="text-muted-foreground">{isRTL ? "بطاقة التعريف الوطنية" : "CIN"}:</span> <span className="font-mono">{detailApp.candidate.cin}</span></div>
+                <div><span className="text-muted-foreground">{isRTL ? "الهاتف" : "Tél"}:</span> <span>{detailApp.candidate.phone}</span></div>
+                <div><span className="text-muted-foreground">{isRTL ? "الولاية" : "Gouvernorat"}:</span> <span>{detailApp.candidate.governorate}</span></div>
+                <div><span className="text-muted-foreground">{isRTL ? "الوظيفة" : "Poste"}:</span> <span>{isRTL ? detailApp.job.titleAr : detailApp.job.titleFr}</span></div>
               </div>
-              {detailApp.submittedAt && <div><span className="text-sm text-muted-foreground">{isRTL ? "تاريخ التقديم" : "Soumis le"}:</span> <span className="text-sm">{new Date(detailApp.submittedAt).toLocaleDateString()}</span></div>}
+              {detailApp.submittedAt && (
+                <p className="text-xs text-muted-foreground mt-2">
+                  {isRTL ? "تاريخ التقديم: " : "Soumis le: "}{new Date(detailApp.submittedAt).toLocaleDateString()}
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-4">
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">{isRTL ? "تحديث الحالة" : "Mettre à jour le statut"}</h3>
+              <div>
+                <Label className="text-sm mb-1 block">{isRTL ? "الحالة" : "Statut"}</Label>
+                <select value={editStatus} onChange={e => setEditStatus(e.target.value)}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+                  {STATUSES.map(s => (
+                    <option key={s} value={s}>{isRTL ? STATUS_CFG[s].label.ar : STATUS_CFG[s].label.fr}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <Label className="text-sm mb-1 block">{isRTL ? "ملاحظة (اختياري)" : "Note (optionnelle)"}</Label>
+                <textarea value={statusNote} onChange={e => setStatusNote(e.target.value)} rows={2}
+                  className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-none"
+                  placeholder={isRTL ? "سبب تغيير الحالة..." : "Raison du changement de statut..."} />
+              </div>
+              <button onClick={async () => {
+                setSavingStatus(true);
+                try {
+                  const res = await fetch(`/api/applications/${detailApp.id}/status`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ status: editStatus, note: statusNote || undefined }),
+                  });
+                  if (res.ok) { setDetailApp(null); fetchApps(); }
+                  else alert(isRTL ? "فشل التحديث" : "Échec de la mise à jour");
+                } catch { alert("Erreur"); }
+                finally { setSavingStatus(false); }
+              }} disabled={savingStatus || editStatus === detailApp.status}
+                className="w-full px-4 py-2 text-sm font-medium rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors">
+                {savingStatus ? (isRTL ? "جاري الحفظ..." : "Enregistrement...") : (isRTL ? "تحديث الحالة" : "Mettre à jour le statut")}
+              </button>
+
               {detailApp.documents.length > 0 && (
-                <div>
-                  <span className="text-sm text-muted-foreground">{isRTL ? "الوثائق" : "Documents"}:</span>
-                  <div className="mt-1 space-y-1">
+                <div className="pt-4 border-t">
+                  <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">{isRTL ? "الوثائق" : "Documents"}</h3>
+                  <div className="space-y-1">
                     {detailApp.documents.map(doc => (
                       <a key={doc.id} href={doc.fileUrl} target="_blank" rel="noopener noreferrer"
                         className="block text-sm text-primary hover:underline">{doc.fileName}</a>

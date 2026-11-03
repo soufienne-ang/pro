@@ -32,9 +32,9 @@ export default function AdminDashboardPage() {
   const isRTL = locale === "ar";
 
   const cards = [
-    { label: isRTL ? "إجمالي المرشحين" : "Total Candidats", value: stats.candidates, href: "candidates", color: "bg-blue-50 text-blue-700" },
+    { label: isRTL ? "مناظرات منشورة" : "Offres publiées", value: stats.publishedJobs, href: "jobs", color: "bg-green-50 text-green-700" },
+    { label: isRTL ? "إجمالي المترشحين" : "Total Candidats", value: stats.candidates, href: "candidates", color: "bg-blue-50 text-blue-700" },
     { label: isRTL ? "طلبات معلقة" : "En attente", value: stats.pending, href: "applications?status=PENDING", color: "bg-amber-50 text-amber-700" },
-    { label: isRTL ? "وظائف منشورة" : "Offres publiées", value: stats.publishedJobs, href: "jobs", color: "bg-green-50 text-green-700" },
     { label: isRTL ? "طلبات مقبولة" : "Acceptées", value: stats.approved, href: "applications?status=APPROVED", color: "bg-purple-50 text-purple-700" },
   ];
 
@@ -57,39 +57,7 @@ export default function AdminDashboardPage() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-xl border p-5 shadow-sm">
-          <h2 className="text-lg font-semibold mb-4">
-            {isRTL ? "روابط سريعة" : "Actions rapides"}
-          </h2>
-          <div className="space-y-3">
-            <Link href={`/${locale}/admin/jobs/new`}>
-              <span className="block p-3 rounded-lg border hover:bg-slate-50 transition-colors cursor-pointer">
-                <span className="font-medium text-sm">{isRTL ? "إضافة وظيفة جديدة" : "Ajouter une nouvelle offre"}</span>
-                <span className="block text-xs text-muted-foreground mt-0.5">
-                  {isRTL ? "إنشاء إعلان وظيفة جديد" : "Créer une nouvelle annonce"}
-                </span>
-              </span>
-            </Link>
-            <Link href={`/${locale}/admin/applications?status=PENDING`}>
-              <span className="block p-3 rounded-lg border hover:bg-slate-50 transition-colors cursor-pointer">
-                <span className="font-medium text-sm">{isRTL ? "مراجعة الطلبات" : "Examiner les candidatures"}</span>
-                <span className="block text-xs text-muted-foreground mt-0.5">
-                  {isRTL ? "مراجعة الطلبات المعلقة" : "Voir les candidatures en attente"}
-                </span>
-              </span>
-            </Link>
-            <Link href={`/${locale}/admin/candidates`}>
-              <span className="block p-3 rounded-lg border hover:bg-slate-50 transition-colors cursor-pointer">
-                <span className="font-medium text-sm">{isRTL ? "البحث عن مرشح" : "Rechercher un candidat"}</span>
-                <span className="block text-xs text-muted-foreground mt-0.5">
-                  {isRTL ? "البحث بالاسم أو رقم بطاقة التعريف" : "Recherche par nom ou CIN"}
-                </span>
-              </span>
-            </Link>
-          </div>
-        </div>
-
+      <div className="grid grid-cols-1 gap-6 mb-8">
         <div className="bg-white rounded-xl border p-5 shadow-sm">
           <h2 className="text-lg font-semibold mb-4">
             {isRTL ? "آخر النشاطات" : "Activités récentes"}
@@ -99,6 +67,7 @@ export default function AdminDashboardPage() {
           </p>
         </div>
       </div>
+
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { ApplicationStatus } from "@prisma/client";
 import { prisma } from "@/server/prisma";
 import PDFDocument from "pdfkit";
+import { ensureScoringCriteria, computeDossierScore, combineTotalScore } from "@/server/scoring";
 import { requirePermission, isErrorResponse } from "@/lib/roles";
 
 export async function GET(request: NextRequest) {
@@ -23,12 +24,14 @@ export async function GET(request: NextRequest) {
 
     const job = await prisma.job.findUnique({
       where: { id: jobId },
-      select: { code: true, titleFr: true, titleAr: true },
+      select: { code: true, titleFr: true, titleAr: true, profile: true, dossierWeight: true, oralWeight: true },
     });
 
     if (!job) {
       return NextResponse.json({ error: "Job not found" }, { status: 404 });
     }
+
+    await ensureScoringCriteria(jobId, job.profile);
 
     const [criteria, applications] = await Promise.all([
       prisma.scoredCriteria.findMany({
@@ -57,28 +60,34 @@ export async function GET(request: NextRequest) {
       }),
     ]);
 
-    const totalWeight = criteria.reduce((sum, c) => sum + c.weight, 0);
-
     const ranked = applications.map((app) => {
       const scoreMap = new Map(app.scores.map((s) => [s.criteriaId, s.value]));
-      let totalWeighted = 0;
+      let oralTotal = 0;
       for (const c of criteria) {
         const val = scoreMap.get(c.id) || 0;
-        totalWeighted += val * (c.weight / totalWeight);
+        oralTotal += val;
       }
+      const dossier = computeDossierScore({
+        academicInfo: app.academicInfo,
+        profile: job.profile,
+        eduLevel: app.eduLevel,
+      });
       return {
         candidate: app.candidate,
         status: app.status,
-        weightedScore: Math.round(totalWeighted * 100) / 100,
+        eduLevel: app.eduLevel,
+        oralTotal: Math.round(oralTotal * 100) / 100,
+        applicationScore: dossier,
+        total: combineTotalScore(dossier, oralTotal, job),
       };
     });
 
-    ranked.sort((a, b) => b.weightedScore - a.weightedScore);
+    ranked.sort((a, b) => b.total - a.total);
 
     doc = new PDFDocument({ margin: 30, size: "A4" });
     const chunks: Buffer[] = [];
     let errorOccurred = false;
-    
+
     doc.on("data", (chunk: Buffer) => chunks.push(chunk));
     doc.on("error", (err) => {
       errorOccurred = true;
@@ -90,8 +99,8 @@ export async function GET(request: NextRequest) {
     doc.moveDown(1.5);
 
     const pageWidth = doc.page.width - 60;
-    const colWidths = [40, 180, 120, 80, 80];
-    const headers = ["Rank", "Candidate", "Email", "Score", "Status"];
+    const colWidths = [40, 160, 80, 60, 60, 60];
+    const headers = ["Rank", "Candidate", "Email", "Oral", "Dossier", "Total"];
 
     const drawHeader = (y: number) => {
       let x = 30;
@@ -123,9 +132,11 @@ export async function GET(request: NextRequest) {
       x += colWidths[1];
       doc.text(item.candidate.email, x, yPos, { width: colWidths[2], align: "left" });
       x += colWidths[2];
-      doc.text(String(item.weightedScore), x, yPos, { width: colWidths[3], align: "left" });
+      doc.text(String(item.oralTotal), x, yPos, { width: colWidths[3], align: "left" });
       x += colWidths[3];
-      doc.text(item.status, x, yPos, { width: colWidths[4], align: "left" });
+      doc.text(String(item.applicationScore), x, yPos, { width: colWidths[4], align: "left" });
+      x += colWidths[4];
+      doc.text(String(item.total), x, yPos, { width: colWidths[5], align: "left" });
 
       yPos += 16;
     });
@@ -147,7 +158,7 @@ export async function GET(request: NextRequest) {
           },
         }));
       });
-      
+
       doc!.on("error", (err) => {
         reject(err);
       });
@@ -157,7 +168,6 @@ export async function GET(request: NextRequest) {
       try {
         doc.end();
       } catch {
-        // Ignore cleanup errors
       }
     }
     console.error("Failed to export PDF:", error);

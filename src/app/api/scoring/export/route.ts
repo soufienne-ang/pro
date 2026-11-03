@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { ApplicationStatus } from "@prisma/client";
 import { prisma } from "@/server/prisma";
 import * as XLSX from "xlsx";
+import { ensureScoringCriteria, computeDossierScore, combineTotalScore, criteriaForJob } from "@/server/scoring";
 import { requirePermission, isErrorResponse } from "@/lib/roles";
 
 export async function GET(request: NextRequest) {
@@ -21,12 +22,14 @@ export async function GET(request: NextRequest) {
 
     const job = await prisma.job.findUnique({
       where: { id: jobId },
-      select: { code: true, titleFr: true, titleAr: true },
+      select: { code: true, titleFr: true, titleAr: true, profile: true, dossierWeight: true, oralWeight: true },
     });
 
     if (!job) {
       return NextResponse.json({ error: "Job not found" }, { status: 404 });
     }
+
+    await ensureScoringCriteria(jobId, job.profile);
 
     const [criteria, applications] = await Promise.all([
       prisma.scoredCriteria.findMany({
@@ -57,8 +60,6 @@ export async function GET(request: NextRequest) {
       }),
     ]);
 
-    const totalWeight = criteria.reduce((sum, c) => sum + c.weight, 0);
-
     const rows = applications.map((app) => {
       const scoreMap = new Map(app.scores.map((s) => [s.criteriaId, s.value]));
       const row: Record<string, string | number> = {
@@ -71,18 +72,28 @@ export async function GET(request: NextRequest) {
         Status: app.status,
       };
 
-      let totalWeighted = 0;
+      const jobCriteria = criteriaForJob(job);
+
+      let oralTotal = 0;
       for (const c of criteria) {
         const val = scoreMap.get(c.id) || 0;
-        row[c.name] = val;
-        totalWeighted += val * (c.weight / totalWeight);
+        const label = jobCriteria.find(fc => fc.nameKey === c.name)?.labelFr || c.name;
+        row[label] = val;
+        oralTotal += val;
       }
 
-      row["Weighted Score"] = Math.round(totalWeighted * 100) / 100;
+      const dossier = computeDossierScore({
+        academicInfo: app.academicInfo,
+        profile: job.profile,
+        eduLevel: app.eduLevel,
+      });
+      row["Oral Total"] = Math.round(oralTotal * 100) / 100;
+      row["Dossier"] = dossier;
+      row["Total"] = combineTotalScore(dossier, oralTotal, job);
       return row;
     });
 
-    rows.sort((a, b) => Number(b["Weighted Score"] ?? 0) - Number(a["Weighted Score"] ?? 0));
+    rows.sort((a, b) => Number(b["Total"] ?? 0) - Number(a["Total"] ?? 0));
     rows.forEach((row, i) => { row["Rank"] = i + 1; });
 
     const wb = XLSX.utils.book_new();

@@ -7,6 +7,7 @@ import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { locales, type Locale } from "@/i18n/config";
 import { ApplicationProvider } from "@/context/application-context";
+import { Providers } from "@/components/providers";
 import { SiteLayout } from "@/components/site-layout";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -43,9 +44,11 @@ export default async function LocaleLayout({
     <html lang={locale} dir={dir} suppressHydrationWarning className={`${inter.variable} ${changa.variable}`}>
       <body className={locale === "ar" ? "font-arabic" : "font-sans"}>
         <NextIntlClientProvider messages={messages}>
-          <ApplicationProvider>
-            <SiteLayout>{children}</SiteLayout>
-          </ApplicationProvider>
+          <Providers>
+            <ApplicationProvider>
+              <SiteLayout>{children}</SiteLayout>
+            </ApplicationProvider>
+          </Providers>
         </NextIntlClientProvider>
       </body>
     </html>

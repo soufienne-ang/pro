@@ -2,12 +2,14 @@
 
 import { useState, useEffect, useCallback } from "react";
 
-interface Job { id: string; code: string; titleFr: string; titleAr: string; }
+interface Job { id: string; code: string; titleFr: string; titleAr: string; resultsPublished: boolean; resultsArchived: boolean; resultsPublishedAt: string | null; }
 
 interface RankingRow {
   applicationId: string;
   candidate: { fullName: string; email: string; cin: string; governorate: string };
   status: string;
+  applicationScore: number;
+  oralTotal: number;
   weightedScore: number;
   rank: number;
 }
@@ -25,9 +27,11 @@ export default function AdminResultsPage() {
   const [locale, setLocale] = useState("fr");
   const [jobs, setJobs] = useState<Job[]>([]);
   const [jobId, setJobId] = useState("");
+  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [rows, setRows] = useState<RankingRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [exporting, setExporting] = useState<"xlsx" | "pdf" | null>(null);
+  const [publishing, setPublishing] = useState(false);
 
   useEffect(() => {
     const segments = window.location.pathname.split("/");
@@ -42,13 +46,22 @@ export default function AdminResultsPage() {
   }, []);
 
   const fetchRanking = useCallback(async () => {
-    if (!jobId) { setRows([]); return; }
+    if (!jobId) { setRows([]); setSelectedJob(null); return; }
     setLoading(true);
     try {
-      const res = await fetch(`/api/scoring/ranking?jobId=${jobId}`);
-      if (res.ok) {
-        const d = await res.json();
+      const [rankingRes, jobRes] = await Promise.all([
+        fetch(`/api/scoring/ranking?jobId=${jobId}`),
+        fetch(`/api/jobs?status=ALL`),
+      ]);
+      if (rankingRes.ok) {
+        const d = await rankingRes.json();
         setRows(d.rankedCandidates || []);
+      }
+      if (jobRes.ok) {
+        const allJobs: Job[] = await jobRes.json();
+        const found = allJobs.find(j => j.id === jobId) || null;
+        setSelectedJob(found);
+        setJobs(allJobs);
       }
     } catch (e) { console.error(e); }
     finally { setLoading(false); }
@@ -57,11 +70,35 @@ export default function AdminResultsPage() {
   useEffect(() => { fetchJobs(); }, [fetchJobs]);
   useEffect(() => { fetchRanking(); }, [fetchRanking]);
 
+  const handlePublish = async (action: "publish" | "archive" | "unpublish") => {
+    if (!jobId) return;
+    setPublishing(true);
+    try {
+      const res = await fetch("/api/results/publish", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ jobId, action }),
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setSelectedJob(prev => prev ? { ...prev, ...updated } : null);
+      } else {
+        const err = await res.json();
+        alert(err.error);
+      }
+    } catch (e) {
+      console.error(e);
+      alert(isRTL ? "خطأ في تحديث حالة النتائج" : "Erreur lors de la mise à jour");
+    } finally {
+      setPublishing(false);
+    }
+  };
+
   const exportFile = async (format: "xlsx" | "pdf") => {
     if (!jobId) return;
     setExporting(format);
     try {
-      const res = await fetch(`/api/scoring/export-${format}?jobId=${jobId}`);
+      const res = await fetch(format === "pdf" ? `/api/scoring/export-pdf?jobId=${jobId}` : `/api/scoring/export?jobId=${jobId}`);
       if (!res.ok) throw new Error("Export failed");
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
@@ -79,6 +116,17 @@ export default function AdminResultsPage() {
   };
 
   const isRTL = locale === "ar";
+
+  const resultStatusBadge = () => {
+    if (!selectedJob) return null;
+    if (selectedJob.resultsPublished && selectedJob.resultsArchived) {
+      return <span className="text-xs font-medium rounded-full px-2.5 py-1 bg-slate-200 text-slate-700">{isRTL ? "مؤرشف" : "Archivé"}</span>;
+    }
+    if (selectedJob.resultsPublished) {
+      return <span className="text-xs font-medium rounded-full px-2.5 py-1 bg-green-100 text-green-700">{isRTL ? "منشور" : "Publié"}</span>;
+    }
+    return <span className="text-xs font-medium rounded-full px-2.5 py-1 bg-amber-100 text-amber-700">{isRTL ? "غير منشور" : "Non publié"}</span>;
+  };
 
   return (
     <div>
@@ -100,10 +148,10 @@ export default function AdminResultsPage() {
 
       <div className="bg-white rounded-xl border p-4 shadow-sm mb-6">
         <div className="flex flex-wrap items-center gap-3">
-          <label className="text-sm text-muted-foreground">{isRTL ? "المنشور" : "Concours"}:</label>
+          <label className="text-sm text-muted-foreground">{isRTL ? "المناظرة" : "Concours"}:</label>
           <select value={jobId} onChange={(e) => setJobId(e.target.value)}
             className="h-9 rounded-md border border-input bg-background px-3 text-sm min-w-[280px]">
-            <option value="">{isRTL ? "اختر منشورًا" : "Sélectionner un concours"}</option>
+            <option value="">{isRTL ? "اختر مناظرة" : "Sélectionner un concours"}</option>
             {jobs.map((j) => (
               <option key={j.id} value={j.id}>
                 {j.code} — {isRTL ? j.titleAr : j.titleFr}
@@ -116,7 +164,7 @@ export default function AdminResultsPage() {
       {!jobId ? (
         <div className="bg-white rounded-xl border p-12 text-center shadow-sm">
           <p className="text-muted-foreground">
-            {isRTL ? "اختر منشورًا لعرض النتائج" : "Sélectionnez un concours pour voir les résultats"}
+            {isRTL ? "اختر مناظرة لعرض النتائج" : "Sélectionnez un concours pour voir les résultats"}
           </p>
         </div>
       ) : loading ? (
@@ -129,16 +177,49 @@ export default function AdminResultsPage() {
             {isRTL ? "لا توجد نتائج بعد" : "Aucun résultat disponible"}
           </p>
         </div>
-      ) : (
+      ) : (<>
+        <div className="flex items-center justify-between mb-4 p-4 bg-white rounded-xl border shadow-sm">
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-medium">{isRTL ? "حالة النتائج:" : "État des résultats:"}</span>
+            {resultStatusBadge()}
+          </div>
+          <div className="flex gap-2">
+            {selectedJob && !selectedJob.resultsPublished && (
+              <button onClick={() => handlePublish("publish")} disabled={publishing}
+                className="px-4 py-1.5 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 disabled:opacity-50 cursor-pointer">
+                {publishing ? "..." : (isRTL ? "نشر النتائج" : "Publier les résultats")}
+              </button>
+            )}
+            {selectedJob?.resultsPublished && !selectedJob.resultsArchived && (
+              <>
+                <button onClick={() => handlePublish("unpublish")} disabled={publishing}
+                  className="px-4 py-1.5 bg-amber-600 text-white rounded-lg text-sm font-medium hover:bg-amber-700 disabled:opacity-50 cursor-pointer">
+                  {publishing ? "..." : (isRTL ? "إلغاء النشر" : "Dépublier")}
+                </button>
+                <button onClick={() => handlePublish("archive")} disabled={publishing}
+                  className="px-4 py-1.5 bg-slate-600 text-white rounded-lg text-sm font-medium hover:bg-slate-700 disabled:opacity-50 cursor-pointer">
+                  {publishing ? "..." : (isRTL ? "أرشفة" : "Archiver")}
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+        <div className="text-xs text-muted-foreground mb-4 p-3 bg-slate-50 rounded-lg">
+          {isRTL
+            ? "الترتيب النهائي للمترشحين تفاضليا: ترتيب المترشحين تفاضليا حسب المجموع العام للنقاط المتحصل عليها : المجموع العام للنقاط = (عدد النقاط المسندة للملف) × 0.7 + (عدد النقاط المسندة في الإختبار الشفاهي) × 0.3"
+            : "Classement final des candidats de manière différentielle : Classement des candidats de manière différentielle selon le score total obtenu : Score total = (Score dossier) × 0.7 + (Score oral) × 0.3"}
+        </div>
         <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
           <table className="w-full">
             <thead>
               <tr className="border-b bg-slate-50 text-sm">
                 <th className="text-center p-3 font-medium w-16">#</th>
-                <th className="text-left p-3 font-medium">{isRTL ? "المرشح" : "Candidat"}</th>
-                <th className="text-left p-3 font-medium hidden md:table-cell">CIN</th>
-                <th className="text-left p-3 font-medium hidden lg:table-cell">{isRTL ? "الولاية" : "Gouvernorat"}</th>
-                <th className="text-center p-3 font-medium">{isRTL ? "النتيجة" : "Score"}</th>
+                <th className="text-right p-3 font-medium">{isRTL ? "المرشح" : "Candidat"}</th>
+                <th className="text-right p-3 font-medium hidden md:table-cell">{isRTL ? "رقم بطاقة التعريف" : "CIN"}</th>
+                <th className="text-right p-3 font-medium hidden lg:table-cell">{isRTL ? "الولاية" : "Gouvernorat"}</th>
+                <th className="text-center p-3 font-medium">{isRTL ? "نقاط الملف" : "Dossier"}</th>
+                <th className="text-center p-3 font-medium">{isRTL ? "الشفاهي" : "Oral"}</th>
+                <th className="text-center p-3 font-medium">{isRTL ? "النتيجة النهائية" : "Total"}</th>
                 <th className="text-center p-3 font-medium">{isRTL ? "الحالة" : "Statut"}</th>
               </tr>
             </thead>
@@ -162,6 +243,12 @@ export default function AdminResultsPage() {
                     <td className="p-3 text-sm font-mono hidden md:table-cell">{r.candidate.cin}</td>
                     <td className="p-3 text-sm hidden lg:table-cell">{r.candidate.governorate}</td>
                     <td className="p-3 text-center">
+                      <span className="text-sm font-bold text-blue-600">{r.applicationScore.toFixed(2)}</span>
+                    </td>
+                    <td className="p-3 text-center">
+                      <span className="text-sm font-bold text-purple-600">{r.oralTotal.toFixed(2)}</span>
+                    </td>
+                    <td className="p-3 text-center">
                       <span className="text-sm font-bold text-primary">{r.weightedScore.toFixed(2)}</span>
                     </td>
                     <td className="p-3 text-center">
@@ -175,7 +262,7 @@ export default function AdminResultsPage() {
             </tbody>
           </table>
         </div>
-      )}
+      </>)}
     </div>
   );
 }

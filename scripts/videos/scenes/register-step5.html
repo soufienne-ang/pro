@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+<meta charset="utf-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Tajawal', sans-serif;
+    background: linear-gradient(135deg, #1e3a5f 0%, #2d5f8a 100%);
+    width: 1280px; height: 720px;
+    overflow: hidden;
+    position: relative;
+  }
+  .container {
+    width: 100%; height: 100%;
+    display: flex; flex-direction: column;
+    padding: 30px;
+    position: relative;
+  }
+  .header {
+    display: flex; align-items: center; gap: 15px;
+    margin-bottom: 20px;
+  }
+  .step-badge {
+    width: 50px; height: 50px;
+    background: rgba(255,255,255,0.2);
+    border: 3px solid #fbbf24;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: #fbbf24; font-size: 22px; font-weight: 800;
+    flex-shrink: 0;
+  }
+  .title-text {
+    color: white; font-size: 28px; font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  }
+  .subtitle-text {
+    color: rgba(255,255,255,0.7); font-size: 16px;
+    margin-right: 65px; margin-bottom: 15px;
+  }
+  .mockup-area {
+    flex: 1;
+    background: rgba(255,255,255,0.95);
+    border-radius: 16px;
+    padding: 30px;
+    position: relative;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    overflow: hidden;
+  }
+  .form-title {
+    font-size: 20px; font-weight: 700; color: #1e3a5f;
+    margin-bottom: 20px; padding-bottom: 10px;
+    border-bottom: 2px solid #e5e7eb;
+  }
+  .form-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 15px;
+  }
+  .form-full { grid-column: 1 / -1; }
+  .field {
+    opacity: 0;
+    animation: fadeInField 0.6s ease forwards;
+  }
+  .field-label {
+    font-size: 13px; font-weight: 500; color: #6b7280;
+    margin-bottom: 4px;
+  }
+  .field-input {
+    width: 100%; height: 40px;
+    background: #f9fafb; border: 2px solid #e5e7eb;
+    border-radius: 8px; padding: 0 12px;
+    font-family: 'Tajawal', sans-serif; font-size: 14px;
+    direction: rtl;
+    transition: all 0.3s;
+  }
+  .field-input.filled {
+    border-color: #10b981; background: #f0fdf4;
+    color: #065f46;
+  }
+  .field-input.highlighted {
+    border-color: #3b82f6; background: #eff6ff;
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.2);
+  }
+  .field-input.select {
+    background: #f9fafb;
+    display: flex; align-items: center;
+    color: #374151;
+    position: relative;
+  }
+  .field-input.select::after {
+    content: '▼'; margin-right: auto; font-size: 10px; color: #9ca3af;
+  }
+  .highlight-ring {
+    position: absolute;
+    border: 3px solid #fbbf24;
+    border-radius: 10px;
+    animation: pulse 1.5s ease-in-out infinite;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.5s;
+    z-index: 10;
+  }
+  .highlight-ring.active { opacity: 1; }
+  .narration-bar {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: linear-gradient(transparent, rgba(0,0,0,0.85));
+    padding: 40px 30px 20px;
+    z-index: 5;
+  }
+  .narration-text {
+    color: white; font-size: 18px; font-weight: 500;
+    text-align: center;
+    line-height: 1.6;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+    min-height: 60px;
+  }
+  .progress-container {
+    position: absolute; bottom: 2px; left: 30px; right: 30px;
+    height: 3px; background: rgba(255,255,255,0.2);
+    border-radius: 2px;
+  }
+  .progress-bar {
+    height: 100%; background: #fbbf24;
+    border-radius: 2px;
+    width: 0%; transition: width 0.3s;
+  }
+  .brand {
+    position: absolute; top: 30px; left: 30px;
+    color: rgba(255,255,255,0.3);
+    font-size: 14px; font-weight: 700;
+    letter-spacing: 2px;
+    z-index: 5;
+  }
+  @keyframes fadeInField {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 0.7; }
+    50% { transform: scale(1.05); opacity: 1; }
+  }
+  .submit-btn {
+    background: #1e40af; color: white;
+    border: none; padding: 12px 30px; border-radius: 8px;
+    font-family: 'Tajawal', sans-serif; font-size: 16px; font-weight: 600;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.5s;
+    margin-top: 20px;
+  }
+  .submit-btn.active { opacity: 1; }
+  .summary-card {
+    background: #f0fdf4; border: 2px solid #10b981;
+    border-radius: 12px; padding: 20px;
+    opacity: 0;
+    transition: opacity 0.5s;
+  }
+  .summary-card.active { opacity: 1; }
+  .doc-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px; background: #f9fafb;
+    border: 1px solid #e5e7eb; border-radius: 8px;
+    margin-bottom: 8px;
+    opacity: 0;
+    animation: fadeInField 0.5s ease forwards;
+  }
+  .doc-checkbox {
+    width: 18px; height: 18px;
+    border: 2px solid #d1d5db; border-radius: 4px;
+    flex-shrink: 0;
+    transition: all 0.3s;
+    position: relative;
+  }
+  .doc-checkbox.checked {
+    background: #10b981; border-color: #10b981;
+  }
+  .doc-checkbox.checked::after {
+    content: '✓';
+    color: white;
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 12px;
+    font-weight: bold;
+  }
+  .doc-label { font-size: 14px; color: #374151; }
+  .job-card {
+    background: #f9fafb; border: 2px solid #e5e7eb;
+    border-radius: 12px; padding: 16px;
+    margin-bottom: 10px;
+    display: flex; align-items: center; gap: 15px;
+    opacity: 0;
+    animation: fadeInField 0.6s ease forwards;
+    transition: all 0.3s;
+  }
+  .job-card.active {
+    border-color: #3b82f6; background: #eff6ff;
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.2);
+  }
+  .job-code {
+    background: #1e40af; color: white;
+    padding: 4px 10px; border-radius: 6px;
+    font-size: 12px; font-weight: 600;
+    flex-shrink: 0;
+  }
+  .checkbox-field {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 0;
+    opacity: 0;
+    animation: fadeInField 0.5s ease forwards;
+  }
+  .checkbox-box {
+    width: 20px; height: 20px;
+    border: 2px solid #d1d5db; border-radius: 4px;
+    flex-shrink: 0;
+    transition: all 0.3s;
+    position: relative;
+  }
+  .checkbox-box.checked {
+    background: #10b981; border-color: #10b981;
+  }
+  .checkbox-box.checked::after {
+    content: '✓';
+    color: white;
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 14px;
+    font-weight: bold;
+  }
+  .checkbox-label { font-size: 14px; color: #374151; }
+  .confetti-container {
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 20;
+  }
+  .confetti-piece {
+    position: absolute;
+    width: 8px; height: 8px;
+    top: -10px;
+    animation: confettiFall linear forwards;
+  }
+  @keyframes confettiFall {
+    to { top: 720px; transform: rotate(720deg); }
+  }
+  .full-width { grid-column: 1 / -1; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="brand">PROMOSPORT</div>
+  <div class="header">
+    <div class="step-badge" id="stepBadge">1</div>
+    <div>
+      <div class="title-text" id="titleText">عنوان الفيديو</div>
+    </div>
+  </div>
+  <div class="subtitle-text" id="subtitleText">وصف الفيديو</div>
+  <div class="mockup-area" id="mockupArea">
+    <div class="form-title" id="formTitle">عنوان النموذج</div>
+    <div id="formContent"></div>
+    <div class="highlight-ring" id="highlightRing"></div>
+    <div class="confetti-container" id="confettiContainer"></div>
+  </div>
+  <div class="narration-bar">
+    <div class="narration-text" id="narrationText"></div>
+    <div class="progress-container">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+  </div>
+</div>
+<script>
+  const CONFIG = {"id":"register-step5","title":"اختيار المناظرة","duration":30,"scenes":[{"start":0,"text":"الآن، سنختار المناظرة التي نريد التقدم إليها. تعرض هذه الصفحة قائمة المناظرات المتاحة."},{"start":8,"text":"تصفح المناظرات المتاحة. يمكنك مشاهدة تفاصيل كل مناظرة بما في ذلك العنوان والرمز وآخر أجل للتقديم."},{"start":16,"text":"اختر المناظرة التي تناسب مؤهلاتك بالنقر عليها. يمكنك اختيار مناظرة واحدة فقط."},{"start":23,"text":"بعد الاختيار، ستظهر المناظرة المحددة. انقر على 'التالي' للانتقال إلى خطوة التأكيد."}],"formTitle":"اختيار المناظرة","subtitle":"اختر المناظرة التي تريد التقدم إليها","fields":[{"type":"job","label":"مناظرة مهندس معلوماتية","code":"INF-2024","date":"آخر أجل: 30/06/2024"},{"type":"job","label":"مناظرة تقني سامي","code":"TECH-2024","date":"آخر أجل: 15/07/2024"},{"type":"job","label":"مناظرة مساعد إداري","code":"ADM-2024","date":"آخر أجل: 20/07/2024"}],"showSubmit":true,"submitText":"التالي →","timeline":[{"time":6,"type":"select-job","selector":"0"},{"time":18,"type":"show-submit"},{"time":25,"type":"highlight","selector":"#submitBtn"}],"stepNumber":5};
+  let currentTime = 0;
+  let triggeredEvents = new Set();
+  let confettiSpawned = false;
+
+  const $ = (id) => document.getElementById(id);
+  const mockupArea = $('mockupArea');
+  const formContent = $('formContent');
+  const formTitle = $('formTitle');
+  const narrationText = $('narrationText');
+  const progressBar = $('progressBar');
+  const stepBadge = $('stepBadge');
+  const titleText = $('titleText');
+  const subtitleText = $('subtitleText');
+  const highlightRing = $('highlightRing');
+  const confettiContainer = $('confettiContainer');
+
+  stepBadge.textContent = CONFIG.stepNumber || CONFIG.title;
+  titleText.textContent = CONFIG.title;
+  subtitleText.textContent = CONFIG.subtitle || '';
+  formTitle.textContent = CONFIG.formTitle || '';
+
+  function buildForm(fields) {
+    const grid = document.createElement('div');
+    grid.className = 'form-grid';
+    const docItems = [];
+
+    (fields || []).forEach((f, i) => {
+      const colClass = f.fullWidth ? 'full-width' : '';
+
+      if (f.type === 'doc') {
+        const div = document.createElement('div');
+        div.className = 'doc-item';
+        div.style.animationDelay = (i * 0.1) + 's';
+        div.innerHTML = '<div class="doc-checkbox" data-doc="' + i + '"></div><span class="doc-label">' + f.label + '</span>';
+        docItems.push(div);
+        return;
+      }
+
+      if (f.type === 'job') {
+        const div = document.createElement('div');
+        div.className = 'job-card full-width';
+        div.style.animationDelay = (i * 0.15) + 's';
+        div.id = 'jobCard';
+        div.innerHTML = '<div class="job-code">' + (f.code || '') + '</div><div style="flex:1"><strong>' + f.label + '</strong></div><div style="color:#6b7280;font-size:13px">' + (f.date || '') + '</div>';
+        grid.appendChild(div);
+        return;
+      }
+
+      if (f.type === 'summary') {
+        const div = document.createElement('div');
+        div.className = 'summary-card full-width';
+        div.id = 'summaryCard';
+        div.innerHTML = '<div style="display:flex;align-items:center;gap:12px"><div style="width:40px;height:40px;background:#10b981;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:20px">\u2713</div><div><strong style="color:#065f46;font-size:16px">' + f.label + '</strong></div></div>';
+        grid.appendChild(div);
+        return;
+      }
+
+      if (f.type === 'checkbox') {
+        const div = document.createElement('div');
+        div.className = 'checkbox-field full-width';
+        div.style.animationDelay = (i * 0.1) + 's';
+        div.innerHTML = '<div class="checkbox-box" id="cb-' + i + '"></div><span class="checkbox-label">' + f.label + '</span>';
+        grid.appendChild(div);
+        return;
+      }
+
+      const fieldDiv = document.createElement('div');
+      fieldDiv.className = 'field ' + colClass;
+      fieldDiv.style.animationDelay = (i * 0.08) + 's';
+
+      const isSelect = f.type === 'select';
+      const ltr = f.ltr ? ' dir="ltr" style="direction:ltr;text-align:left"' : '';
+
+      fieldDiv.innerHTML = '<div class="field-label">' + f.label + '</div>' +
+        (isSelect
+          ? '<div class="field-input select">' + (f.placeholder || 'اختر...') + '</div>'
+          : '<input class="field-input" id="inp-' + i + '" type="text" placeholder="' + (f.placeholder || '') + '"' + ltr + ' readonly>');
+      grid.appendChild(fieldDiv);
+    });
+
+    if (docItems.length > 0) {
+      const docContainer = document.createElement('div');
+      docContainer.className = 'full-width';
+      docContainer.style.display = 'grid';
+      docContainer.style.gridTemplateColumns = '1fr 1fr';
+      docContainer.style.gap = '8px';
+      docItems.forEach(d => docContainer.appendChild(d));
+      grid.appendChild(docContainer);
+    }
+
+    if (CONFIG.showSubmit) {
+      const btnDiv = document.createElement('div');
+      btnDiv.className = 'full-width';
+      btnDiv.style.textAlign = 'center';
+      btnDiv.innerHTML = '<button class="submit-btn" id="submitBtn">' + (CONFIG.submitText || 'التالي') + '</button>';
+      grid.appendChild(btnDiv);
+    }
+
+    return grid;
+  }
+
+  if (CONFIG.fields) {
+    formContent.appendChild(buildForm(CONFIG.fields));
+  }
+
+  function updateScene(time) {
+    const totalDuration = CONFIG.duration || 30;
+    const progress = Math.min(time / totalDuration, 1);
+    progressBar.style.width = (progress * 100) + '%';
+
+    const scenes = CONFIG.scenes || [];
+    let currentText = '';
+    for (const scene of scenes) {
+      const end = scene.end || (scene.start + 8);
+      if (time >= scene.start && time < end) {
+        currentText = scene.text;
+        break;
+      }
+    }
+    if (!currentText && scenes.length > 0) {
+      currentText = scenes[scenes.length - 1].text;
+    }
+    narrationText.textContent = currentText;
+
+    const timeline = CONFIG.timeline || [];
+    for (const event of timeline) {
+      const key = event.type + ':' + (event.selector || event.time);
+      if (time >= event.time && !triggeredEvents.has(key)) {
+        triggeredEvents.add(key);
+        executeEvent(event);
+      }
+    }
+
+    if (progress >= 1) return true;
+    return false;
+  }
+
+  function executeEvent(event) {
+    switch (event.type) {
+      case 'highlight': {
+        const el = document.querySelector(event.selector);
+        if (el) {
+          el.classList.add('highlighted');
+          const rect = el.getBoundingClientRect();
+          const mockRect = mockupArea.getBoundingClientRect();
+          highlightRing.style.cssText = 'top:' + (rect.top - mockRect.top - 4) + 'px;left:' + (rect.left - mockRect.left - 4) + 'px;width:' + (rect.width + 8) + 'px;height:' + (rect.height + 8) + 'px;';
+          highlightRing.classList.add('active');
+        }
+        break;
+      }
+      case 'unhighlight':
+        highlightRing.classList.remove('active');
+        break;
+      case 'fill': {
+        const el = document.querySelector(event.selector);
+        if (el) {
+          el.value = event.value || '';
+          el.classList.add('filled');
+        }
+        break;
+      }
+      case 'check': {
+        const el = document.querySelector(event.selector);
+        if (el) {
+          el.classList.add('checked');
+          // Also try as doc-checkbox
+          const docEl = document.querySelector(event.selector);
+          if (docEl) docEl.classList.add('checked');
+        }
+        break;
+      }
+      case 'select-job': {
+        const jobCards = document.querySelectorAll('.job-card');
+        if (jobCards.length > 0) {
+          const activeIdx = parseInt(event.selector?.replace('#jobCard', '') || '0');
+          const idx = isNaN(activeIdx) ? 0 : activeIdx;
+          jobCards.forEach((c, i) => {
+            c.classList.toggle('active', i === idx);
+          });
+        }
+        break;
+      }
+      case 'show-summary': {
+        highlightRing.classList.remove('active');
+        const sc = document.getElementById('summaryCard');
+        if (sc) {
+          sc.style.opacity = '1';
+          sc.style.animation = 'none';
+        }
+        break;
+      }
+      case 'show-submit': {
+        const btn = document.getElementById('submitBtn');
+        if (btn) btn.classList.add('active');
+        break;
+      }
+      case 'confetti': {
+        if (confettiSpawned) return;
+        confettiSpawned = true;
+        const colors = ['#fbbf24','#10b981','#3b82f6','#ef4444','#8b5cf6','#ec4899'];
+        for (let i = 0; i < 40; i++) {
+          const piece = document.createElement('div');
+          piece.className = 'confetti-piece';
+          piece.style.left = Math.random() * 100 + '%';
+          piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+          piece.style.animationDuration = (2 + Math.random() * 2) + 's';
+          piece.style.animationDelay = Math.random() * 0.5 + 's';
+          piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+          piece.style.width = (6 + Math.random() * 6) + 'px';
+          piece.style.height = (6 + Math.random() * 6) + 'px';
+          confettiContainer.appendChild(piece);
+        }
+        break;
+      }
+    }
+  }
+
+  // Listen for seek events from puppeteer
+  window.addEventListener('seek', function(e) {
+    currentTime = e.detail;
+    updateScene(currentTime);
+  });
+
+  // Also allow direct setting via setTime function
+  window.setTime = function(time) {
+    currentTime = time;
+    updateScene(currentTime);
+  };
+
+  // Initialize
+  updateScene(0);
+</script>
+</body>
+</html>

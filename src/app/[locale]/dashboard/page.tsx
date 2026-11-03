@@ -10,6 +10,7 @@ interface Application {
   createdAt: string;
   totalScore: number | null;
   rank: number | null;
+  hasConvocation?: boolean;
   job: {
     id: string;
     code: string;
@@ -59,6 +60,25 @@ interface DashboardData {
     email: string;
     smsOptIn: boolean;
   };
+  examInvitations?: ExamInvitation[];
+}
+
+interface ExamInvitation {
+  resultId: string;
+  examId: string;
+  examTitleAr: string;
+  examTitleFr: string;
+  examType: string;
+  coefficient: number;
+  duration: number | null;
+  sessionDate: string;
+  startTime: string;
+  endTime: string;
+  sessionType: string;
+  roomName: string | null;
+  roomLocation: string | null;
+  score: number | null;
+  present: boolean;
 }
 
 const STATUS_CONFIG: Record<string, { label: Record<string, string>; color: string }> = {
@@ -106,10 +126,11 @@ export default function DashboardPage() {
 
   const fetchDashboard = useCallback(async () => {
     try {
-      const [appRes, notifRes, profRes] = await Promise.all([
+      const [appRes, notifRes, profRes, examRes] = await Promise.all([
         fetch("/api/candidate/applications"),
         fetch("/api/candidate/notifications"),
         fetch("/api/candidate/profile"),
+        fetch("/api/candidate/exam-invitations"),
       ]);
 
       if (!appRes.ok && !profRes.ok) {
@@ -121,11 +142,13 @@ export default function DashboardPage() {
       const appData = appRes.ok ? await appRes.json() : { applications: [] };
       const notifData = notifRes.ok ? await notifRes.json() : { notifications: [] };
       const profData = profRes.ok ? await profRes.json() : { candidate: { id: "", fullName: "", email: "", smsOptIn: true } };
+      const examData = examRes.ok ? await examRes.json() : { invitations: [] };
 
       setData({
         applications: appData.applications,
         notifications: notifData.notifications,
         candidate: profData.candidate,
+        examInvitations: examData.invitations,
       });
     } catch {
       setError("An error occurred");
@@ -185,11 +208,13 @@ export default function DashboardPage() {
               : `Vous avez ${applications.length} ${applications.length === 1 ? "candidature" : "candidatures"}`}
           </p>
         </div>
-        <Link href={`/${locale}/apply`}>
-          <span className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium cursor-pointer">
-            {isRTL ? "تقديم طلب جديد" : "Nouvelle candidature"}
-          </span>
-        </Link>
+        {applications.length === 0 && (
+          <Link href={`/${locale}/apply`}>
+            <span className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors text-sm font-medium cursor-pointer">
+              {isRTL ? "تقديم طلب جديد" : "Nouvelle candidature"}
+            </span>
+          </Link>
+        )}
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
@@ -208,6 +233,62 @@ export default function DashboardPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-4">
+
+          {data?.examInvitations && data.examInvitations.length > 0 && (
+            <div className="mb-6">
+              <h2 className="text-lg font-semibold mb-4">
+                {isRTL ? "استدعاءات الاختبارات" : "Convocations aux examens"}
+              </h2>
+              <div className="space-y-3">
+                {data.examInvitations.map((inv) => {
+                  const examTypeLabel = inv.examType === "ORAL"
+                    ? (isRTL ? "شفوي" : "Oral")
+                    : inv.examType === "PRACTICAL"
+                    ? (isRTL ? "تطبيقي" : "Pratique")
+                    : (isRTL ? "رياضي" : "Sport");
+                  const d = new Date(inv.sessionDate);
+                  return (
+                    <div key={inv.resultId} className="bg-amber-50 border border-amber-200 rounded-xl p-4 shadow-sm">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-amber-100 text-amber-800">
+                              {examTypeLabel}
+                            </span>
+                            {inv.sessionType === "RESIT" && (
+                              <span className="px-2 py-0.5 text-xs font-medium rounded-full bg-red-100 text-red-700">
+                                {isRTL ? "تعويضية" : "Rattrapage"}
+                              </span>
+                            )}
+                          </div>
+                          <h3 className="font-semibold text-sm">
+                            {isRTL ? inv.examTitleAr : inv.examTitleFr}
+                          </h3>
+                          <div className="text-xs text-muted-foreground mt-1 space-y-0.5">
+                            <p>{d.toLocaleDateString(isRTL ? "ar-TN" : "fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}</p>
+                            <p>{inv.startTime} - {inv.endTime}</p>
+                            {inv.roomName && <p>{isRTL ? "القاعة: " : "Salle: "}{inv.roomName}{inv.roomLocation ? " (" + inv.roomLocation + ")" : ""}</p>}
+                          </div>
+                        </div>
+                        <button onClick={() => {
+                          var a = document.createElement("a");
+                          a.href = "/api/candidate/exam-invitations/" + inv.resultId + "/convocation";
+                          a.target = "_blank";
+                          a.click();
+                        }}
+                          className="px-4 py-2 bg-amber-600 text-white rounded-lg text-sm font-medium hover:bg-amber-700 transition-colors shrink-0 cursor-pointer">
+                          <svg className="w-4 h-4 inline-block ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                          {isRTL ? "تحميل  مطلب الترشح" : "Télécharger convocation"}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
           <h2 className="text-lg font-semibold">
             {isRTL ? "طلبات الترشح" : "Mes candidatures"}
           </h2>
@@ -241,7 +322,7 @@ export default function DashboardPage() {
                   <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        <h3 className="font-semibold text-base truncate">
+                        <h3 className="font-bold text-lg leading-snug">
                           {isRTL ? app.job.titleAr : app.job.titleFr}
                         </h3>
                         <span className={`px-2.5 py-0.5 text-xs font-medium rounded-full border ${statusCfg.color} shrink-0`}>
@@ -278,19 +359,45 @@ export default function DashboardPage() {
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                       <button
+                        onClick={() => window.open(`/${locale}/apply/preview/${app.id}`, "_blank")}
+                        className="p-2 text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-lg transition-colors"
+                        title={isRTL ? "معاينة البيانات" : "Aperçu des données"}
+                      >
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                      </button>
+                      <button
                         onClick={() => {
                           const link = document.createElement("a");
                           link.href = `/api/candidate/applications/${app.id}/pdf`;
-                          link.target = "_blank";
+                          link.download = "demande.pdf";
                           link.click();
                         }}
-                        className="p-2 text-muted-foreground hover:text-primary hover:bg-primary/5 rounded-lg transition-colors"
-                        title={isRTL ? "تحميل PDF" : "Télécharger PDF"}
+                        className="p-2 text-amber-600 hover:text-amber-700 hover:bg-amber-50 rounded-lg transition-colors"
+                        title={isRTL ? "تحميل مطلب الترشح" : "Télécharger demande"}
                       >
                         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
                       </button>
+                      {app.status === "ORAL_TEST" && (
+                        <button
+                          onClick={() => {
+                            const link = document.createElement("a");
+                            link.href = `/api/candidate/applications/${app.id}/convocation`;
+                            link.download = "convocation.pdf";
+                            link.click();
+                          }}
+                          className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-700 transition-colors"
+                        >
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                          {isRTL ? "تحميل استدعاء الاختبار الشفوي" : "Télécharger convocation"}
+                        </button>
+                      )}
                     </div>
                   </div>
 
@@ -348,29 +455,7 @@ export default function DashboardPage() {
             )}
           </div>
 
-          <div className="bg-white rounded-xl border p-5 shadow-sm">
-            <h2 className="text-lg font-semibold mb-3">
-              {isRTL ? "روابط سريعة" : "Liens rapides"}
-            </h2>
-            <div className="space-y-2">
-              <Link href={`/${locale}/dashboard/settings`}>
-                <span className="block p-3 rounded-lg text-sm hover:bg-slate-50 transition-colors cursor-pointer">
-                  <span className="font-medium">{isRTL ? "الإعدادات" : "Paramètres"}</span>
-                  <span className="block text-muted-foreground text-xs mt-0.5">
-                    {isRTL ? "تعديل الملف الشخصي وكلمة المرور" : "Modifier le profil et mot de passe"}
-                  </span>
-                </span>
-              </Link>
-              <Link href={`/${locale}/apply`}>
-                <span className="block p-3 rounded-lg text-sm hover:bg-slate-50 transition-colors cursor-pointer">
-                  <span className="font-medium">{isRTL ? "تقديم طلب" : "Nouvelle candidature"}</span>
-                  <span className="block text-muted-foreground text-xs mt-0.5">
-                    {isRTL ? "التقديم على وظيفة جديدة" : "Postuler pour un nouveau poste"}
-                  </span>
-                </span>
-              </Link>
-            </div>
-          </div>
+
         </div>
       </div>
     </div>

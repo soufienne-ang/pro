@@ -47,6 +47,25 @@ enum StudyLevel {
   DOCTORAT
 }
 
+// Candidate track a job belongs to.
+// ACADEMIC -> diploma required (engineers, administrators, technicians)
+// MANUAL   -> no diploma required, declared education level instead
+//           (maintenance, multi-skilled workers, cleaners)
+enum CandidateProfile {
+  ACADEMIC
+  MANUAL
+}
+
+// Education level declared by MANUAL candidates, used for eligibility
+// and as the base of the dossier score.
+enum EduLevel {
+  NONE
+  PRIMARY
+  MIDDLE
+  SECONDARY
+  VOCATIONAL
+}
+
 model Admin {
   id           String   @id @default(cuid())
   email        String   @unique
@@ -61,6 +80,15 @@ model Admin {
   auditLogs    AuditLog[]
 
   @@map("admins")
+}
+
+model RolePermission {
+  id          String   @id @default(cuid())
+  role        Role     @unique
+  permissions Json
+  updatedAt   DateTime @updatedAt
+
+  @@map("role_permissions")
 }
 
 model Candidate {
@@ -94,6 +122,7 @@ model Candidate {
   notifications     Notification[]
   documents         Document[]
   auditLogs         AuditLog[]
+  examResults       ExamResult[]
 
   @@index([governorate])
   @@index([fullName])
@@ -133,6 +162,18 @@ model Diploma {
   @@map("diplomas")
 }
 
+enum ExamType {
+  WRITTEN
+  ORAL
+  PRACTICAL
+  SPORTS
+}
+
+enum SessionType {
+  MAIN
+  RESIT
+}
+
 model Job {
   id              String    @id @default(cuid())
   code            String    @unique
@@ -145,22 +186,112 @@ model Job {
   openings        Int
   deadline        DateTime
   status          JobStatus @default(DRAFT)
+  profile         CandidateProfile @default(ACADEMIC)
+  minEduLevel     EduLevel  @default(SECONDARY)
+  dossierWeight   Float     @default(70)
+  oralWeight      Float     @default(30)
   requiredDocs    String    @db.Text
   exclusionConditions String? @db.Text
   
   pdfUrl          String?
   imageUrl        String?
+
+  resultsPublished   Boolean  @default(false)
+  resultsArchived    Boolean  @default(false)
+  resultsPublishedAt DateTime?
   
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
   applications    Application[]
   scoringCriteria ScoredCriteria[]
+  convocationTemplate ConvocationTemplate?
+  exams           Exam[]
 
   @@index([status])
   @@index([deadline])
   @@index([status, deadline])
+  @@index([profile])
+  @@index([resultsPublished])
   @@map("jobs")
+}
+
+model Room {
+  id        String   @id @default(cuid())
+  name      String
+  capacity  Int
+  location  String?
+  equipment String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sessions  ExamSession[]
+
+  @@map("rooms")
+}
+
+model Exam {
+  id          String   @id @default(cuid())
+  titleAr     String
+  titleFr     String
+  jobId       String
+  type        ExamType
+  coefficient Float    @default(1)
+  duration    Int?
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  job         Job           @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  sessions    ExamSession[]
+
+  @@index([jobId])
+  @@map("exams")
+}
+
+model ExamSession {
+  id            String      @id @default(cuid())
+  examId        String
+  roomId        String?
+  name          String?
+  date          DateTime
+  endDate       DateTime?
+  startTime     String
+  endTime       String
+  type          SessionType @default(MAIN)
+  maxCandidates Int?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  exam          Exam          @relation(fields: [examId], references: [id], onDelete: Cascade)
+  room          Room?         @relation(fields: [roomId], references: [id], onDelete: SetNull)
+  results       ExamResult[]
+
+  @@index([examId])
+  @@index([roomId])
+  @@index([date])
+  @@map("exam_sessions")
+}
+
+model ExamResult {
+  id          String    @id @default(cuid())
+  sessionId   String
+  candidateId String
+  score       Float?
+  present     Boolean   @default(true)
+  gradedBy    String?
+  gradedAt    DateTime  @default(now())
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  session     ExamSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  candidate   Candidate   @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, candidateId])
+  @@index([sessionId])
+  @@index([candidateId])
+  @@map("exam_results")
 }
 
 model Application {
@@ -172,6 +303,7 @@ model Application {
   personalInfo    Json?
   academicInfo    Json?
   experienceInfo  Json?
+  eduLevel        EduLevel?
   
   totalScore      Float?
   rank             Int?
@@ -179,6 +311,8 @@ model Application {
   submittedAt     DateTime?
   reviewedAt      DateTime?
   reviewedBy      String?
+  convocationPath String?
+  convocationSentAt DateTime?
   
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
@@ -276,6 +410,28 @@ model Notification {
   @@index([status])
   @@index([sentAt])
   @@map("notifications")
+}
+
+model ConvocationTemplate {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  titleAr     String
+  titleFr     String
+  headerAr    String   @default("")
+  headerFr    String   @default("")
+  footerAr    String?  @db.Text
+  footerFr    String?  @db.Text
+  logoUrl     String?
+  fields      Json     @default("[]")
+  isDefault   Boolean  @default(false)
+  jobId       String?  @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  job         Job?     @relation(fields: [jobId], references: [id], onDelete: SetNull)
+
+  @@index([jobId])
+  @@map("convocation_templates")
 }
 
 model AuditLog {

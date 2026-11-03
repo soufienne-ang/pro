@@ -59,7 +59,7 @@ export default function ForgotPasswordPage() {
     setLoading(true);
 
     try {
-      const res = await fetch(`/api/auth/verify?locale=${locale}`, {
+      const res = await fetch(`/api/auth/verify-password-code?locale=${locale}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, code }),
